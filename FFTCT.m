@@ -3,9 +3,13 @@ function [X]= FFTCT(x)
 %Obtenemos un vector columna
 %Cuidado no puedes hacer las traspuesta del vector obtenido porque
 %reordena como le da la gana :')
-N=length(x);
+N1=length(x);
 %Check if its power of 2
-powerof2(N);
+bool_power2=false;
+while bool_power2==false
+    [x,bool_power2]=makepowerof2(x,bool_power2);
+end
+N=length(x);
 %Separate the x[N] into even and odd-indexed subsequences
 for r=0:(N/2-1)
     %Even
@@ -37,9 +41,12 @@ end
 %     w=e^-(2*pi*1i/N)*k;
 %     X(k)=xe
     
-function powerof2(N)
+function [x,bool_power2]=makepowerof2(x,bool_power2)
+N=length(x);
 if mod(log(N)/log(2),1)~=0
-    cprintf('err', 'NOT A POWER OF 2 \n')
+    x(N+1)=0;
+else
+    bool_power2=true;
 end
 end
 
