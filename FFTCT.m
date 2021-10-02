@@ -31,15 +31,14 @@ else
         X(k+1+(N/2),1)=Xe(k+1)-w*Xo(k+1);
     end
 end
-end
 
-% elseif lenght(xe)<1
-%     Xe=FFTCT(xe);
-%     Xo=FFTCT(xo);
+%Acortar el vector a la longitud inicial. Esto creo que no se debe hacer
+% if N1~=N
+%     for i=N1+1:N
+%         X(i)=[];
+%     end
 % end
-% for k=0:length(xe)-1
-%     w=e^-(2*pi*1i/N)*k;
-%     X(k)=xe
+end
     
 function [x,bool_power2]=makepowerof2(x,bool_power2)
 N=length(x);
