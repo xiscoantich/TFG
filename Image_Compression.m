@@ -23,8 +23,8 @@ img=mat2gray(Blog);
 %% Grey scale
 %imshow(img,[]);
 %% Color scale
-imagesc(img)
-colormap
+imagesc(img);
+colormap;
 %colorbar %Los valores de la leyenda estan escalados entre 0 i 1
 %% Mesh plot
 plot_mesh(img);
@@ -45,8 +45,8 @@ img=mat2gray(Blog);
 %imshow(img,[]);
 %title(['',num2str(keep*100),'%'],'FontSize',10)
 %% Color scale
-imagesc(img)
-colormap
+imagesc(img);
+colormap;
 %colorbar %Los valores de la leyenda estan escalados entre 0 i 1
 title(['',num2str(keep*100),'%'],'FontSize',10)
 %% Mesh plot
@@ -70,19 +70,20 @@ end
 
 %% FFT test
 function test_Image_Compression
-Btest = test_read_image;
-Bttest = test_FTT2(Btest);
-Atlowtest = test_cut(Bttest,0.01); %Keep = 0.01
-test_uncompress(Atlowtest);
+load('test.mat');
+Btest = test_read_image(test);
+Bttest = test_FTT2(Btest,test);
+Atlowtest = test_cut(Bttest,0.01,test); %Keep = 0.01
+test_uncompress(Atlowtest,test);
 end
 % save ('Btest.mat','B')
 % save ('Bttest.mat','Bt')
 % save ('Atlowtest.mat','Atlow')
 % save ('Alowtest.mat','Alow')
 
-function Btest= test_read_image
+function Btest= test_read_image(test)
 Btest = read_image;
-Bdata = load ('Btest.mat');
+Bdata = test.Btest;
 error = norm(double(Bdata.B)-double(Btest));
 if error==0
   cprintf('green', 'test read image  pass \n');
@@ -92,9 +93,9 @@ else
 end
 end
 
-function Bttest= test_FTT2(Btest)
+function Bttest= test_FTT2(Btest,test)
 Bttest = fft2(Btest);
-Btdata = load ('Bttest.mat');
+Btdata = test.Bttest;
 error = norm(double(Btdata.Bt)-double(Bttest));
 if error==0
   cprintf('green', 'test FTT2  pass \n');
@@ -104,9 +105,9 @@ else
 end
 end
 
-function Atlowtest = test_cut(Bttest,keep)
+function Atlowtest = test_cut(Bttest,keep,test)
 Atlowtest = cut(Bttest, keep);
-Atlowdata = load ('Atlowtest.mat');
+Atlowdata = test.Atlowtest;
 error = norm(double(Atlowdata.Atlow)-double(Atlowtest));
 if error==0
   cprintf('green', 'test cut  pass \n');
@@ -116,9 +117,9 @@ else
 end
 end
 
-function test_uncompress(Atlowtest)
+function test_uncompress(Atlowtest,test)
 Alowtest = uncompress(Atlowtest);
-Alowdata = load('Alowtest.mat');
+Alowdata = test.Alowtest;
 error = norm(double(Alowdata.Alow)-double(Alowtest));
 if error==0
   cprintf('green', 'test cut  pass \n');
