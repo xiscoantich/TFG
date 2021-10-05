@@ -1,5 +1,6 @@
 function Image_Compression
-test_Image_Compression
+close all; clearvars;
+%test_Image_Compression
 B = read_image;
 plot_mesh(B);
 Bt=fft2(B); 
