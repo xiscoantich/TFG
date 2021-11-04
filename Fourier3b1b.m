@@ -2,8 +2,8 @@
 clearvars 
 clc 
 close all
-%% Pure signal
-Fs = 1e3;                       %Frecuencia de muestreo
+% Pure signal
+Fs = 1e2;                       %Frecuencia de muestreo
 time =8;                        %Duracion de la señal
 t = 0:1/Fs:time-(1/Fs);
 f=4;                            %Frecuencia de la señal Hz
@@ -17,7 +17,7 @@ ylim([-1.5 1.5])
 xlim([0 time])
 grid on;
 
-%% Wraping
+% Wraping
 figure
 %Plot wraping around the origin;
 tiledlayout(4,4);
@@ -32,27 +32,55 @@ title(['f = ',num2str(wf),'cycles/s'])
 grid on
 end
 
-%% Grafico f vs g(f)
-wf_vec = 0:0.001:10;
+% Grafico f vs g(f)
+%freq de muestreo para evitar trenzado
+Fm=1/(2*f);
+%Fm=1/(4*f);
+%Calc graf
+wf_vec = 0:Fm:50;
+
 j=length(wf_vec);
+ft_1=zeros(1,length(wf_vec));
 for a=1:1:j
     wf=wf_vec(a);
     x2 = eval(g2);
-    sumatorio(a)=sum(x2);
+    ft_1(a)=sum(x2);
 end
-
-
 figure
 hold on
-plot(wf_vec,abs(sumatorio))
+plot(wf_vec,abs(ft_1),'b')
 grid on;
-% FDT red 
+
+%FDT red 
 xdft = fft(x);
 xdft = xdft(1:length(x)/2+1);
 freq = 0:Fs/length(x):Fs/2;
-plot(freq,abs(xdft));
+plot(freq,abs(xdft),'r+');
 xlim([0 wf_vec(end)])
 xlabel('f [Hz]');
+
+%Recontruccion
+%Obtener y recortar la funcion
+%Aqui obtenemos la funcion pero multiplicado por 400
+g_somb=cut(ft_1,0.01);
+
+%Calculo
+%g_somb=ft_1;
+n = length(g_somb);
+wf_vec_rec=wf_vec;
+%t=linspace(0,8,n);
+j=length(t);
+for a=1:1:j
+    time_rec=t(a);
+    x1=g_somb.*exp(1i*2*pi*time_rec.*wf_vec_rec);
+    x1_rec(a)=sum(x1);
+end
+%x3_sum=ifft(g_somb);
+figure
+plot(t,real(x1_rec)/length(wf_vec))
+grid on;
+
+
 
 
 %% Chord
@@ -121,6 +149,7 @@ xlabel('f [Hz]');
 hold off;
 
 %% Square wave 
+clearvars
 % time = (0:0.01:1)';
 % y = 0.2*sin(2*pi*50*time) + 0.5*sin(2*pi*120*time);
 % yn = y + 0.3*randn(size(time));
@@ -162,13 +191,13 @@ grid on;
 xlabel ('time [s]');
 ylabel ('g(t)');
 
-%% Wraping sqw
+% Wraping sqw
 figure
 %Plot wraping around the origin;
-t = tiledlayout(4,4);
+tiledlayout(4,4);
+g2_sqw = 'exp(-i*2*pi*wf.*time).*y';
 for wf = 0:0.3:4.5 %winding frequency (cycles per second)3.3:0.1:4.8
 nexttile
-g2_sqw = 'exp(-i*2*pi*wf.*time).*y';
 x2_sqw = eval(g2_sqw);
 plot(real(x2_sqw), imag(x2_sqw))
 ylim([-1 1])
@@ -177,7 +206,7 @@ title(['f = ',num2str(wf),'cycles/s'])
 grid on
 end
 
-%% Grafico f vs g(f) sqw
+% Grafico f vs g(f) sqw
 wf_vec_sqw = 0:0.01:6;
 j=length(wf_vec_sqw);
 
@@ -199,3 +228,35 @@ plot(freq,abs(xdft));
 xlim([0 wf_vec_sqw(end)])
 xlabel('f [Hz]');
 hold off;
+
+%Recontruccion
+%Obtener y recortar la funcion
+%Aqui obtenemos la funcion pero multiplicado por 1.6043e+04
+g_somb=cut(sumatorio_ran,0.5);
+
+%Calculo
+%g_somb=ft_1;
+n = length(g_somb);
+wf_vec_rec=wf_vec_sqw;
+%t=linspace(0,8,n);
+j=length(time);
+for a=1:1:j
+    time_rec=time(a);
+    x1=g_somb.*exp(1i*2*pi*time_rec.*wf_vec_rec);
+    x1_rec(a)=sum(x1);
+end
+%x3_sum=ifft(g_somb);
+figure
+plot(time,real(x1_rec)/1.6043e+04)
+grid on;
+hold on 
+plot(time,y)
+
+
+%Funciones
+function Atlow = cut(Bt, keep)
+Btsort = sort(abs(Bt(:)));
+thresh = Btsort(floor((1-keep)*length(Btsort)));
+ind = abs(Bt)>thresh;       %Find small index;
+Atlow = Bt.*ind;            %Theshold small indices
+end

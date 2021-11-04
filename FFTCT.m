@@ -43,6 +43,7 @@ end
 function [x,bool_power2]=makepowerof2(x,bool_power2)
 N=length(x);
 if mod(log(N)/log(2),1)~=0
+    
     x(N+1)=0;
 else
     bool_power2=true;
