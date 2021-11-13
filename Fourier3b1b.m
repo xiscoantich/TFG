@@ -6,11 +6,10 @@ close all
 %% Datos
 %Example 1
 Fs1 = 1e2;                     %Frecuencia de muestreo de la senyal
-time1 =8;                      %Duracion de la señal
+time1 =10;                      %Duracion de la señal
 f1=4;
 wf1 = 3.3:0.1:4.8;             %Wraping f
-Fm1=1/60;                      %freq de muestreo (para evitar trenzado Fm=1/(2*f)
-fend1=10;                      %Frecuencia mas alta para ft
+fend1=(1/time1)*(Fs1*time1/2); %Frecuencia mas alta para ft
 
 %Example 2
 Fs2 = 1e3;                       %Frecuencia de muestreo de la senyal
@@ -18,26 +17,26 @@ time2 =10;                       %Duracion de la señal
 f2_1=2;                          %Frecuencia de la señal Hz
 f2_2=3;                          %Frecuencia de la señal Hz
 wf2 = 1.8:0.1:3.3;
-Fm2=1/60;                      %freq de muestreo (para evitar trenzado Fm=1/(2*f)
-fend2=10;                      %Frecuencia mas alta para ft
+fend2=(1/time2)*(Fs2*time2/2);   %Frecuencia mas alta para ft
 
 %Example 3
 time3=10;
 wf3 = 0:0.3:4.5;
-Fs3 = 1e3;                     %Frecuencia de muestreo de la senyal
-Fm3=1/60;                      %freq de muestreo (para evitar trenzado Fm=1/(2*f)
-fend3=10;                      %Frecuencia mas alta para ft
+keep=[0.2 0.5 0.95];              %Reconstruccion
 
 %% Example 1
 %Frecuencia de la señal Hz
 [x1,t1] = signal1(f1, Fs1, time1);
 plot_signal_1 (x1, t1);
-
 % Wraping
 plot_wraping (x1, wf1, t1)
 
 % Grafico f vs g(f)
-ft_1 = ft_3b1b (x1, Fs1, Fm1, fend1, t1);
+[ft_1, xdft1]= ft_3b1b (x1, Fs1, fend1, t1);
+
+[x1_rec] = reconstruction (ft_1, 0.7, fend1, t1);
+figure
+plot(real(x1_rec));
 
 %% Example 2
 [x2,x2_1,x2_2,t2] = signal2(f2_1, f2_2, Fs2, time2);
@@ -47,38 +46,42 @@ plot_signal_2 (x2,x2_1,x2_2,t2);
 plot_wraping (x2, wf2, t2);
 
 % Grafico f vs g(f)
-ft_2 = ft_3b1b (x2, Fs2, Fm2, fend2, t2);
+[ft_2, xdft2] = ft_3b1b (x2, Fs2, fend2, t2);
+
 
 %% Example 3
 
 [x3, t3] = signal3(time3);
+Fs3=length(x3)/time3;
+fend3=(1/time3)*(Fs3*time3/2); %Frecuencia mas alta para ft
 plot_signal_1(x3,t3);
 
 % Wraping
 plot_wraping (x3, wf3, t3)
 
 % Grafico f vs g(f)
-Fs3=length(x3)/10;
-ft_3 = ft_3b1b (x3, Fs3, Fm3, fend3, t3);
+[ft_3, xdft3]= ft_3b1b (x3, Fs3, fend3, t3);
+
+figure
+plot(real(ft_3))
+hold on
+plot(real(xdft3))
+hold off
 
 %Recontruccion
 %Obtener y recortar la funcion
 %Aqui obtenemos la funcion pero multiplicado por 1.6043e+04
-keep=[0.2 0.5 0.95];
 p=zeros(1,length(keep));
-wf_vec = 0:Fm3:fend3;
 figure
 p(1)=plot(t3,x3);
 grid on;
 hold on
 for i=1:1:length(keep)
-[x3_rec] = reconstruction (ft_3 ,keep(i), wf_vec, t3, 9.6597e+03);
-p(i+1)=plot(t3, real(x3_rec));
+[x3_rec] = reconstruction (ft_3 ,keep(i), fend3, t3);
+p(i+1)=plot(t3, real(x3_rec),'LineWidth',1.5);
 end
 legend([p(1) p(2) p(3) p(4)],{'Original','keep = 20%','keep = 50%','keep = 95%'})
 hold off
-
-
 
 %Funciones
 function Atlow = cut(Bt, keep)
@@ -174,8 +177,10 @@ tiledlayout(2,8);
     end
 end
 
-function [ft_1] = ft_3b1b (x, Fs, Fm, f_end, t)
-wf = 0:Fm:f_end;
+function [ft_1, xdft] = ft_3b1b (x, Fs, f_end, t)
+%wf = 0:Fm:f_end;
+wf=linspace(0,f_end,length(t)/2+1);
+%wf=linspace(0,f_end,length(t));
 j=length(wf);
 ft_1=zeros(1,length(wf));
 for i=1:1:j
@@ -184,23 +189,26 @@ for i=1:1:j
 end
 figure
 hold on
-plot(wf,abs(ft_1),'b','LineWidth',2)
+plot(wf,abs(ft_1),'bo','LineWidth',1.5)
 grid on;
 
 %FDT red 
 xdft = fft(x);
+rec_xdft=ifft(xdft);
 xdft = xdft(1:length(x)/2+1);
 freq = 0:Fs/length(x):Fs/2;
-plot(freq,abs(xdft),'r','LineWidth',1.5);
-xlim([0 f_end])
+plot(freq,abs(xdft),'r+','LineWidth',1.5);
+%xlim([0 f_end])
 xlabel('f [Hz]');
-legend('My code ft','Matlab fft');
+legend('My code ft','Matlab fft','FontSize', 12);
 hold off;
 end
 
-function [x1_rec] = reconstruction (sumatorio_ran ,keep, wf_vec_rec, time, divide)
+function [x1_rec] = reconstruction (sumatorio_ran ,keep, fend, time)
 %Recontruccion
 %Obtener y recortar la funcion
+%wf_vec_rec = 0:Fm:fend;
+wf_vec_rec=linspace(0,fend,length(time)/2+1);
 g_somb=cut(sumatorio_ran,keep);
 j=length(time);
 for a=1:1:j
@@ -208,5 +216,5 @@ for a=1:1:j
     x1=g_somb.*exp(1i*2*pi*time_rec.*wf_vec_rec);
     x1_rec(a)=sum(x1);
 end
-x1_rec=x1_rec/divide;
+x1_rec=x1_rec/(length(time)/2);
 end
