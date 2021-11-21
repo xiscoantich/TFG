@@ -8,7 +8,7 @@ close all
 Fs1 = 1e2;                     %Frecuencia de muestreo de la senyal
 time1 =10;                      %Duracion de la señal
 f1=4;
-wf1 = 3.3:0.1:4.8;             %Wraping f
+wf1 = 3.2:0.2:4.8;             %Wraping f
 fend1=(1/time1)*(Fs1*time1/2); %Frecuencia mas alta para ft
 
 %Example 2
@@ -16,98 +16,120 @@ Fs2 = 1e2;                       %Frecuencia de muestreo de la senyal
 time2 =10;                       %Duracion de la señal
 f2_1=2;                          %Frecuencia de la señal Hz
 f2_2=3;                          %Frecuencia de la señal Hz
-wf2 = 1.8:0.1:3.3;
+wf2 = 1.8:0.2:3.3;
 fend2=(1/time2)*(Fs2*time2/2);   %Frecuencia mas alta para ft
 
 %Example 3
 time3=10;
 wf3 = 0:0.3:4.5;
-keep=[0.2 0.5 0.99];              %Reconstruccion
+keep=[0.1 0.9];              %Reconstruccion
 
 %Example 4
 time4 = 10;
 Fs4 = 1e2;
+wf4 = 0:0.2:4.5;
 
 %% Example 1
 %Frecuencia de la señal Hz
+figure
+t = tiledlayout(4,4);
+nexttile([2,2]);
 [x1,t1] = signal1(f1, Fs1, time1);
 plot_signal_1 (x1, t1);
-% Wraping
-plot_wraping (x1, wf1, t1)
 
 % Grafico f vs g(f)
+nexttile([2,2]);
 [ft_1_trenz]= ft_3b1b (x1, Fs1, fend1, t1); %Para obtener trenzado
 [ft_1,x1_dft]= ft_dft(x1, time1);           %Dft sin trenzado
 
-%Reconstruction 
-figure
-[x1_rec] = reconstruction_dft (ft_1, 0.7, t1);
+% Wraping
+plot_wraping (x1, wf1, t1);
+
+% %Reconstruction 
+% figure
+% [x1_rec] = reconstruction_dft (ft_1, 0.7, t1);
 
 %% Example 2
+figure
+t = tiledlayout(4,4);
 [x2,x2_1,x2_2,t2] = signal2(f2_1, f2_2, Fs2, time2);
 plot_signal_2 (x2,x2_1,x2_2,t2);
 
+% Grafico f vs g(f)
+nexttile([2,2]);
+[ft_2_trenz]= ft_3b1b (x2, Fs2, fend2, t2); %Para obtener trenzado
+[ft_2]= ft_dft(x2, time2);                  %Dft sin trenzado
 % Wraping
 plot_wraping (x2, wf2, t2);
 
-% Grafico f vs g(f)
-[ft_2_trenz]= ft_3b1b (x2, Fs2, fend2, t2); %Para obtener trenzado
-[ft_2]= ft_dft(x2, time2);                  %Dft sin trenzado
-
-%Reconstruction 
-figure
-[x2_rec] = reconstruction_dft (ft_2, 0.7, t2);
+% %Reconstruction 
+% figure
+% [x2_rec] = reconstruction_dft (ft_2, 0.7, t2);
 
 
 %% Example 3
+figure
+t = tiledlayout(4,4);
+nexttile([2,2]);
 
 [x3, t3] = signal3(time3);
 Fs3=length(x3)/time3;
 fend3=(1/time3)*(Fs3*time3/2); %Frecuencia mas alta para ft
-%plot_signal_1(x3,t3);
-
-% Wraping
-plot_wraping (x3, wf3, t3)
-
-% Grafico f vs g(f)
-[ft_3_trenz]= ft_3b1b (x3, Fs3, fend3, t3); %Para obtener trenzado
-[ft_3]= ft_dft(x3, time3);                  %Dft sin trenzado   
 
 %Reconstruction 
-
-%Obtener y recortar la funcion
-%Aqui obtenemos la funcion pero multiplicado por 1.6043e+04
+[ft_3]= ft_dft(x3, time3);                  %Dft sin trenzado  
 p=zeros(1,length(keep));
-figure
 p(1)=plot(t3,x3);
 grid on;
 hold on
 for i=1:1:length(keep)
 [x3_rec] = reconstruction_dft (ft_3, keep(i), t3);
-p(i+1)=plot(t3, real(x3_rec),'LineWidth',1.5);
+p(i+1)=plot(t3, real(x3_rec),'LineWidth',1);
 hold on
 end
-legend([p(1) p(2) p(3) p(4)],{'Original','keep = 20%','keep = 50%','keep = 95%'})
+legend([p(1) p(2) p(3)],{'Original','r = 10%','r = 90%'})
 hold off
 
+% Grafico f vs g(f)
+nexttile([2,2]);
+[ft_3_trenz]= ft_3b1b (x3, Fs3, fend3, t3); %Para obtener trenzado
+
+% Wraping
+plot_wraping (x3, wf3, t3)
+
 %% Exampel 4
+figure
+t = tiledlayout(4,4);
+nexttile([2,2]);
 x4=[zeros(1,time4/2*Fs4) ones(1,time4/2*Fs4)];
 t4=linspace(0,time4,Fs4*time4);
 fend4=(1/time4)*(Fs4*time4/2); %Frecuencia mas alta para ft
 
+%Para la poder hacer la reconstrucción
+[ft_4,x4_dft]= ft_dft(x4, time4);           %Dft sin trenzado  
+
 plot_signal_1 (x4, t4);
-% Wraping
-% plot_wraping (x4, wf4, t4)
+hold on
+[x4_rec] = reconstruction_dft (ft_4, 0.1, t4);
 
 % Grafico f vs g(f)
+nexttile([2,2]);
 [ft_4_trenz]= ft_3b1b (x4, Fs4, fend4, t4); %Para obtener trenzado
 [ft_4,x4_dft]= ft_dft(x4, time4);           %Dft sin trenzado  
 
-%Reconstruction 
-figure
-[x4_rec] = reconstruction_dft (ft_4, 0.1, t4);
-hold on 
-plot(t4,x4)
+% Wraping
+
+ plot_wraping (x4, wf4, t4)
+ 
+
+% %Reconstruction 
+% figure
+% [x4_rec] = reconstruction_dft (ft_4, 0.1, t4);
+% hold on 
+% plot(t4,x4)
+
+
+
 
 %% Funciones
 function Atlow = cut(Bt, keep)
@@ -161,41 +183,40 @@ t = linspace(0,time,n);
 end
 
 function plot_signal_1 (x, t)
-figure;
 plot(t,x);
 xlabel ('time [s]');
 ylabel ('g(t)');
 ylim([min(x)-(abs(min(x))*0.1) 1.1*max(x)])
 xlim([0 t(end)])
+
 grid on;
 end
 
 function plot_signal_2 (x2,x2_1,x2_2,t2)
-figure;
-tiledlayout(3,1)
-nexttile
+ax1=nexttile(1,[2 2]);
 plot(t2,x2);
 ylabel ('Dyad');
 grid on;
-nexttile
-plot(t2,x2_1);
-ylabel ('g1(t)');
-grid on;
-nexttile
-plot(t2,x2_2);
-grid on;
+% xticklabels(ax1,{})
+% ax2=nexttile(13,[3 2]);
+% plot(t2,x2_1);
+% ylabel ('g1(t)');
+% grid on;
+% xticklabels(ax2,{})
+% nexttile(25,[3 2])
+% plot(t2,x2_2);
+% grid on;
 xlabel ('time [s]');
 ylabel ('g2(t)');
 end
 
 function plot_wraping (x, wf, t)
 % Wraping around the origin;
-figure
-tiledlayout(2,8);
-    for i=1:1:length(wf) %winding frequency (cycles per second)3.3:0.1:4.8
+%tiledlayout(2,8);
+    for i=1:1:8 %length(wf) %winding frequency (cycles per second)3.3:0.1:4.8
     nexttile
     x2 = exp(-1i*2*pi*wf(i).*t).*x;
-    plot(real(x2), imag(x2))
+    plot(real(x2), imag(x2));
     ylim([-1.1*max(x) 1.1*max(x)])
     xlim([-1.1*max(x) 1.1*max(x)])
     title(['f = ',num2str(wf(i)),'cycles/s'])
@@ -213,9 +234,9 @@ for i=1:1:j
     x2 = exp(-1i*2*pi*wf(i).*t).*x;
     ft_1(i)=sum(x2);
 end
-figure
-hold on
+
 plot(wf,abs(ft_1),'b','LineWidth',1.5)
+hold on
 grid on;
 
 %FDT red 
@@ -229,9 +250,8 @@ freq = Fs*(0:(length(x)/2))/length(x);
 % freq = 0:Fs/(length(x)):Fs-Fs/length(x); %Esto da mal
 plot(freq,abs(xdft_cut),'r','LineWidth',1);
 xlabel('f [Hz]');
-legend('My code ft','Matlab fft','FontSize', 12);
+legend('My code ft','Matlab fft','FontSize', 8);
 hold off;
-
 end
 
 function [x_rec,xdft] = ft_dft(x,time)
@@ -252,26 +272,26 @@ xdft = fft(x);
 xdft_cut = xdft(1:floor(length(x)/2+1));
 %freq = 0:Fs/length(x):Fs/2; %Esto da mal 
 freq = Fs*(0:(length(x)/2))/length(x);
-%Aqui lo graficamos todo
-% xdft_cut = xdft(1:length(x));
-% freq = 0:Fs/(length(x)):Fs-Fs/length(x); %Esto da mal
-figure
-plot(freq,abs(xdft_cut),'r+','LineWidth',1.5);
-hold on;
+% %Aqui lo graficamos todo
+% % xdft_cut = xdft(1:length(x));
+% % freq = 0:Fs/(length(x)):Fs-Fs/length(x); %Esto da mal
+% figure
+% plot(freq,abs(xdft_cut),'r+','LineWidth',1.5);
+% hold on;
 
-%Plot DFT blue
-x_rec_cut=x_rec(1:floor(length(x)/2+1));
-plot(freq,abs(x_rec_cut),'bo','LineWidth',1.5)
-grid on;
-xlabel('f [Hz]');
-legend('My code ft','Matlab fft','FontSize', 12);
-hold off
+% %Plot DFT blue
+% x_rec_cut=x_rec(1:floor(length(x)/2+1));
+% plot(freq,abs(x_rec_cut),'bo','LineWidth',1.5)
+% grid on;
+% xlabel('f [Hz]');
+% legend('My code ft','Matlab fft','FontSize', 12);
+% hold off
 
-%Plot error
-error=(x_rec-xdft);
-figure
-plot(abs(error));
-ylabel('error');
+% %Plot error
+% error=(x_rec-xdft);
+% figure
+% plot(abs(error));
+% ylabel('error');
 end
 
 function [x1_rec] = reconstruction (sumatorio_ran ,keep, fend, time) %Esta funcion no sirve para nada
