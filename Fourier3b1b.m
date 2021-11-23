@@ -26,7 +26,7 @@ keep=[0.1 0.9];              %Reconstruccion
 
 %Example 4
 time4 = 10;
-Fs4 = 1e2;
+Fs4 = 2e1;
 wf4 = 0:0.2:4.5;
 
 %% Example 1
@@ -89,7 +89,6 @@ hold on
 end
 legend([p(1) p(2) p(3)],{'Original','r = 10%','r = 90%'})
 hold off
-
 % Grafico f vs g(f)
 nexttile([2,2]);
 [ft_3_trenz]= ft_3b1b (x3, Fs3, fend3, t3); %Para obtener trenzado
@@ -110,7 +109,8 @@ fend4=(1/time4)*(Fs4*time4/2); %Frecuencia mas alta para ft
 
 plot_signal_1 (x4, t4);
 hold on
-[x4_rec] = reconstruction_dft (ft_4, 0.1, t4);
+[x4_rec] = reconstruction_dft (ft_4, 0.25, t4);
+legend('Original','r=25%');
 
 % Grafico f vs g(f)
 nexttile([2,2]);
@@ -186,9 +186,8 @@ function plot_signal_1 (x, t)
 plot(t,x);
 xlabel ('time [s]');
 ylabel ('g(t)');
-ylim([min(x)-(abs(min(x))*0.1) 1.1*max(x)])
+ylim([min(x)-(abs(max(x))*0.1) 1.1*max(x)])
 xlim([0 t(end)])
-
 grid on;
 end
 
@@ -250,7 +249,7 @@ freq = Fs*(0:(length(x)/2))/length(x);
 % freq = 0:Fs/(length(x)):Fs-Fs/length(x); %Esto da mal
 plot(freq,abs(xdft_cut),'r','LineWidth',1);
 xlabel('f [Hz]');
-legend('My code ft','Matlab fft','FontSize', 8);
+legend('My code ft','Matlab fft');
 hold off;
 end
 
