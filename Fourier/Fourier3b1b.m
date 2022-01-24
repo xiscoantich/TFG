@@ -206,7 +206,7 @@ grid on;
 % plot(t2,x2_2);
 % grid on;
 xlabel ('time [s]');
-ylabel ('g2(t)');
+% ylabel ('g2(t)');
 end
 
 function plot_wraping (x, wf, t)
