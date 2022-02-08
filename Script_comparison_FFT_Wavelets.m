@@ -1,32 +1,3 @@
-%Code that compares FFT and wavelets
-clc;
-close all
-clearvars
-%This code uses the functions:
-    %-FFTCT_matrix
-    %-IFFTCT
-    addpath 'C:\Users\Xisco Antich\Documents\UPC\TFG\Matlab Code\Fourier'
-    %-contwt
-    %-invcwt
-    addpath 'C:\Users\Xisco Antich\Documents\UPC\TFG\Matlab Code\Wavelets'
-    
- %% Datos
-%Example 1
-Fs1 = 1e2;                      %Frecuencia de muestreo de la senyal
-time1 =6;                      %Duracion de la señal
-f1=1;                           %Frecuencia de la onda de la señal
-fend1=(1/time1)*(Fs1*time1/2);  %Frecuencia mas alta para ft
-keep1 = 0.2;
-%Datos para wavelet
-pad_1 = 1;
-dj_1 = 0.25;                    %smaller number gives better resolution, default = 0.25;
-dt_1 = 1/Fs1;
-so_1 = dt_1;                    %default
-Jfac_1 = 1;                       %Sets the maximum scale to compute at (therefore number of scales). 1 is equiv to default. 
-N_1 = time1*Fs1;
-j1_1 =  round(Jfac_1*(log2(N_1*dt_1/so_1))/dj_1); %default: (log2(N*dt/so))/dj
-mother_1 = 'MORLET';
-param_1 = 6;                    %wave number for morlet, see >> help wave_bases for more details
 
 %Example 2
 Fs2 = 1e2;                      %Frecuencia de muestreo de la senyal
