@@ -6,9 +6,9 @@ close all
 %% Datos
 %Example 1
 Fs1 = 1e2;                     %Frecuencia de muestreo de la senyal
-time1 =10;                      %Duracion de la señal
-f1=4;
-wf1 = 3.2:0.2:4.8;             %Wraping f
+time1 =6;                      %Duracion de la señal
+f1=2;
+wf1 = 1.2:0.2:2.8;             %Wraping f
 fend1=(1/time1)*(Fs1*time1/2); %Frecuencia mas alta para ft
 
 %Example 2
@@ -22,7 +22,7 @@ fend2=(1/time2)*(Fs2*time2/2);   %Frecuencia mas alta para ft
 %Example 3
 time3=10;
 wf3 = 0:0.3:4.5;
-keep=[0.1 0.9];              %Reconstruccion
+keep=[0.01 0.20];              %Reconstruccion
 
 %Example 4
 time4 = 10;
@@ -32,7 +32,7 @@ wf4 = 0:0.2:4.5;
 %% Example 1
 %Frecuencia de la señal Hz
 figure
-t = tiledlayout(4,4);
+t = tiledlayout(4,4,'TileSpacing','compact','Padding','tight');
 nexttile([2,2]);
 [x1,t1] = signal1(f1, Fs1, time1);
 plot_signal_1 (x1, t1);
@@ -51,12 +51,13 @@ plot_wraping (x1, wf1, t1);
 
 %% Example 2
 figure
-t = tiledlayout(4,4);
+t = tiledlayout(5,4,'TileSpacing','tight','Padding','tight');
 [x2,x2_1,x2_2,t2] = signal2(f2_1, f2_2, Fs2, time2);
+
 plot_signal_2 (x2,x2_1,x2_2,t2);
 
 % Grafico f vs g(f)
-nexttile([2,2]);
+nexttile([3,2]);
 [ft_2_trenz]= ft_3b1b (x2, Fs2, fend2, t2); %Para obtener trenzado
 [ft_2]= ft_dft(x2, time2);                  %Dft sin trenzado
 % Wraping
@@ -69,7 +70,7 @@ plot_wraping (x2, wf2, t2);
 
 %% Example 3
 figure
-t = tiledlayout(4,4);
+t = tiledlayout(4,4,'TileSpacing','compact','Padding','tight');
 nexttile([2,2]);
 
 [x3, t3] = signal3(time3);
@@ -79,7 +80,7 @@ fend3=(1/time3)*(Fs3*time3/2); %Frecuencia mas alta para ft
 %Reconstruction 
 [ft_3]= ft_dft(x3, time3);                  %Dft sin trenzado  
 p=zeros(1,length(keep));
-p(1)=plot(t3,x3);
+p(1)=plot(t3,x3,'LineWidth',1);
 grid on;
 hold on
 for i=1:1:length(keep)
@@ -87,7 +88,7 @@ for i=1:1:length(keep)
 p(i+1)=plot(t3, real(x3_rec),'LineWidth',1);
 hold on
 end
-legend([p(1) p(2) p(3)],{'Original','r = 10%','r = 90%'})
+legend([p(1) p(2) p(3)],{'Original','r = 1%','r = 20%'},'Location','best')
 hold off
 % Grafico f vs g(f)
 nexttile([2,2]);
@@ -98,7 +99,7 @@ plot_wraping (x3, wf3, t3)
 
 %% Exampel 4
 figure
-t = tiledlayout(4,4);
+t = tiledlayout(4,4,'TileSpacing','compact','Padding','tight');
 nexttile([2,2]);
 x4=[zeros(1,time4/2*Fs4) ones(1,time4/2*Fs4)];
 t4=linspace(0,time4,Fs4*time4);
@@ -109,8 +110,8 @@ fend4=(1/time4)*(Fs4*time4/2); %Frecuencia mas alta para ft
 
 plot_signal_1 (x4, t4);
 hold on
-[x4_rec] = reconstruction_dft (ft_4, 0.25, t4);
-legend('Original','r=25%');
+[x4_rec] = reconstruction_dft (ft_4, 0.20, t4);
+legend('Original','r=20%','Location','best');
 
 % Grafico f vs g(f)
 nexttile([2,2]);
@@ -183,7 +184,7 @@ t = linspace(0,time,n);
 end
 
 function plot_signal_1 (x, t)
-plot(t,x);
+plot(t,x,'LineWidth',1);
 xlabel ('time [s]');
 ylabel ('g(t)');
 ylim([min(x)-(abs(max(x))*0.1) 1.1*max(x)])
@@ -192,21 +193,23 @@ grid on;
 end
 
 function plot_signal_2 (x2,x2_1,x2_2,t2)
-ax1=nexttile(1,[2 2]);
-plot(t2,x2);
+ax1=nexttile(1,[1 2]);
+plot(t2,x2,'LineWidth',1);
 ylabel ('Dyad');
 grid on;
-% xticklabels(ax1,{})
-% ax2=nexttile(13,[3 2]);
-% plot(t2,x2_1);
-% ylabel ('g1(t)');
-% grid on;
-% xticklabels(ax2,{})
-% nexttile(25,[3 2])
-% plot(t2,x2_2);
-% grid on;
+xticklabels(ax1,{})
+
+ax2=nexttile(5,[1 2]);
+plot(t2,x2_1,'LineWidth',1);
+ylabel ('g1(t)');
+grid on;
+xticklabels(ax2,{})
+
+nexttile(9,[1 2])
+plot(t2,x2_2,'LineWidth',1);
+grid on;
 xlabel ('time [s]');
-% ylabel ('g2(t)');
+ylabel ('g2(t)');
 end
 
 function plot_wraping (x, wf, t)
@@ -235,6 +238,7 @@ for i=1:1:j
 end
 
 plot(wf,abs(ft_1),'b','LineWidth',1.5)
+xlim([0 10])
 hold on
 grid on;
 
@@ -320,7 +324,7 @@ for n=0:1:N-1
     end
     x_rec(n+1) = 1/N*sum(x_sum);
 end
-plot(t,real(x_rec));
+plot(t,real(x_rec),'LineWidth',1);
 xlabel ('time [s]');
 ylabel ('g(t)');
 grid on;

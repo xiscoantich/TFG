@@ -87,7 +87,7 @@ figure
 [x2,x2_1,x2_2,t2] = signal2(f2_1, f2_2, Fs2, time2);
 plot_signal_2 (x2,x2_1,x2_2,t2);
 
-N = length(makepowerof2(x2));
+N = length(makepowerof2(x2));hold on;
 %Fourier
 x2_fft = FFTCT_matrix(x2);
 x2_fft_cut = cut(x2_fft,keep1);
