@@ -3,7 +3,7 @@ function [y]= FFTCT(x)
 %Obtenemos un vector columna
 %Cuidado no puedes hacer las traspuesta del vector obtenido porque
 %reordena como le da la gana :')
-x = x - mean(x);
+%x = x - mean(x);
 n_before_padding = length(x);
 x = makepowerof2(x);
 N = length(x);

@@ -1,22 +1,13 @@
 function [y] = FFTCT_matrix(x)
 %The FFT Via Matrix Factorizations
 %Charles Van Loan - Department of Computer Science - Cornell University
-x = x - mean(x);
+%x = x - mean(x);
 n_before_padding = length(x);
 x = makepowerof2(x);
 N = length(x);
 y = FFTCT_matrix_recursive(x);
-y = fft_neg_frec_cut (y);
+%y = fft_neg_frec_cut (y);
 y = y(1:n_before_padding,:);  % get rid of padding before returning 
-end
-
-function [y] = makepowerof2(x)
-N = length(x);
-y = x;
-while mod(log(N)/log(2),1)~=0 
-    y(N+1) = 0;
-    N = N+1;
-end
 end
 
 function [y] = FFTCT_matrix_recursive(x)
@@ -42,4 +33,13 @@ function y = fft_neg_frec_cut(x)
 %Esta funcion se debe aplicar antes de eliminar el zero padding
 N = length (x);
 y = [x(1:N/2); zeros(N/2,1)];
+end
+
+function [y] = makepowerof2(x)
+N = length(x);
+y = x;
+while mod(log(N)/log(2),1)~=0 
+    y(N+1) = 0;
+    N = N+1;
+end
 end

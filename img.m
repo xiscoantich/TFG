@@ -3,15 +3,15 @@ classdef img
         %1st u have to create the object and then introduce the image on .B
         %The compression is set to 1%
     properties 
-        B
+        B;
     end
     properties(Constant)
         keep=0.01;
     end
     properties(Dependent)
-         Bt
-        Atlow
-        Alow
+        Bt;
+        Atlow;
+        Alow;
     end
     
     methods
