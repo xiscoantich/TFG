@@ -4,10 +4,21 @@ function [y] = FFTCT_matrix(x)
 %x = x - mean(x);
 n_before_padding = length(x);
 x = makepowerof2(x);
-N = length(x);
+%N = length(x);
 y = FFTCT_matrix_recursive(x);
-%y = fft_neg_frec_cut (y);
+
+%Metodo 1
+%y = fft_neg_frec_cut (y); %Esta linea no se si se deberia ocultar
 y = y(1:n_before_padding,:);  % get rid of padding before returning 
+
+%Medodo 2
+%y = fft_cut_padding(y,n_before_padding);
+%Este metoodo dos no funciona, no es la manera correcta
+
+%Extract the result in the same shape as entered 
+if length(x(1,:))~=1 %Check if its a row
+    y = reshape(y,1,[]);
+end
 end
 
 function [y] = FFTCT_matrix_recursive(x)
@@ -33,6 +44,28 @@ function y = fft_neg_frec_cut(x)
 %Esta funcion se debe aplicar antes de eliminar el zero padding
 N = length (x);
 y = [x(1:N/2); zeros(N/2,1)];
+end
+
+function x_cut = fft_cut_padding(x,n_before_padding)
+%Intercala la part positiva y negativa del vector x
+%Alternate
+N = length (x);
+p = x(1:N/2); %Positive
+n = x(N/2+1:end); %Negative
+n = flipud(n);
+
+x_alternate = zeros(N,1);
+x_alternate(1:2:end) = p;
+x_alternate(2:2:end) = n;
+
+%Cut
+x_alternate_cut = x_alternate(1:n_before_padding,:);
+
+%Return to the original shape
+p_cut = x_alternate_cut(1:2:end);
+n_cut = x_alternate_cut(2:2:end);
+n_cut = flipud(n_cut);
+x_cut = [p_cut; n_cut];
 end
 
 function [y] = makepowerof2(x)

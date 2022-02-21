@@ -16,7 +16,7 @@ Fs1 = 1e2;                      %Frecuencia de muestreo de la senyal
 time1 =6;                      %Duracion de la señal
 f1=1;                           %Frecuencia de la onda de la señal
 fend1=(1/time1)*(Fs1*time1/2);  %Frecuencia mas alta para ft
-keep1 = 0.2;
+keep1 = 0.9;
 %Datos para wavelet
 pad_1 = 1;
 dj_1 = 0.25;                    %smaller number gives better resolution, default = 0.25;
@@ -56,14 +56,16 @@ t2 = t1(1:507);
 x3 = x1(1:509); %507 - 513
 t3 = t1(1:509);
 
-plot_signal_1(t1, x1);hold on;
+%plot_signal_1(t1, x1);hold on;
+plot(t1,x1,'o-');hold on;
 
 N1 = length(makepowerof2(x1));
+
 %Fourier
 x1_fft = FFTCT_matrix(x1);
 x1_fft_cut = cut(x1_fft,keep1);
 x1_fft_rec = IFFTCT(x1_fft_cut);
-plot(t1,real(x1_fft_rec));hold on;
+plot(t1,real(x1_fft_rec),'+-');hold on;
 
 
 N2 = length(makepowerof2(x2));
@@ -71,14 +73,14 @@ N2 = length(makepowerof2(x2));
 x2_fft = FFTCT_matrix(x2);
 x2_fft_cut = cut(x2_fft,keep1);
 x2_fft_rec = IFFTCT(x2_fft_cut);
-plot(t2,real(x2_fft_rec));hold on;
+plot(t2,real(x2_fft_rec),'+-');hold on;
 
 N3 = length(makepowerof2(x3));
 %Fourier
 x3_fft = FFTCT_matrix(x3);
 x3_fft_cut = cut(x3_fft,keep1);
 x3_fft_rec = IFFTCT(x3_fft_cut);
-plot(t3,real(x3_fft_rec));hold on;
+plot(t3,real(x3_fft_rec),'+-');hold on;
 
 legend('original','x1','x2','x3')
 

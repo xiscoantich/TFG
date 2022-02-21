@@ -13,6 +13,11 @@ y = FFTCT_recursive(x);
 y = y(1:n_before_padding,:);  % get rid of padding before returning
 %El zero padding hace que la señal acabe siendo mas pequeña, lo que tengo
 %que hacer es multiplicarla por un factor que todavia no se cual es
+
+%Extract the result in the same shape as entered 
+if length(x(1,:))~=1 %Check if its a row
+    y = reshape(y,1,[]);
+end
 end
     
 function [y] = makepowerof2(x)

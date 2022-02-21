@@ -4,7 +4,7 @@ classdef FourierWaveletsComparator < handle
         
             Fs = 1e2;                      %Frecuencia de muestreo de la senyal
             time =2;                      %Duracion de la señal
-            keep = [0.3 0.1];
+            keep = [0.9 0.1];
             
         %Wavelet parameters
             dj = 0.25;                    %smaller number gives better resolution, default = 0.25;
