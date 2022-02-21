@@ -30,7 +30,7 @@ classdef FourierTransformer < handle
             end
             
             for i=1:1:length(obj.Data.keep)
-                obj.Data.ft_cut = cut(obj.Data.ft, obj.Data.keep(i)); %Esto no se porque no funciona
+                obj.Data.ft_cut = obj.cut(obj.Data.ft, obj.Data.keep(i)); %Esto no se porque no funciona
                 if isempty(obj.Data.ft)
                     cprintf('err', 'InverseTransform error \n');return;
                 elseif length(obj.Data.signal(1,:))==1 || length(obj.Data.signal(:,1))==1
@@ -42,12 +42,16 @@ classdef FourierTransformer < handle
         end
     end
     
-    methods (Access = private)
+    methods (Access = private, Static)
         function Atlow = cut(Bt, keep)
-            Btsort = sort(abs(Bt(:)));
-            thresh = Btsort(floor((1-keep)*length(Btsort)));
-            ind = abs(Bt)>thresh;       %Find small index;
-            Atlow = Bt.*ind;            %Theshold small indices
+            if keep == 1
+                Atlow =Bt;
+            else
+                Btsort = sort(abs(Bt(:)));
+                thresh = Btsort(floor((1-keep)*length(Btsort)));
+                ind = abs(Bt)>thresh;       %Find small index;
+                Atlow = Bt.*ind;            %Theshold small indices
+            end
         end
     end
 end

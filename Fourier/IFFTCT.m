@@ -4,7 +4,7 @@ function [y] = IFFTCT(x)
 n_before_padding = length(x);
 x = makepowerof2(x);
 N = length(x);
-y = (2/N)*conj(FFTCT(conj(x))); %Esta fft no puede tener el corte de frecuencias negativas!
+y = real((2/N)*conj(FFTCT(conj(x)))); %Esta fft no puede tener el corte de frecuencias negativas!
 y = y(1:n_before_padding,:);  % get rid of padding before returning
 end
 
