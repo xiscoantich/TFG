@@ -4,59 +4,78 @@ classdef Data < handle
     
     properties (Access = public)
         signal
-        ft
-        ft_cut
-        rec
-        fs
-        keep
-        id
-        %fourier_transformer ???
+        dim
+        freq
     end
     
     properties (Access = private)
-        
+        name
     end
     
     methods (Access = public)
-        function obj = Data()
-            folder = fileparts(which(mfilename)); 
-            % Add that folder plus all subfolders to the path.
-            addpath(genpath(folder)); 
-            
-            %obj.fourier_transformer = FourierTransformer(obj); ???
+
+        function obj = Data(cParams)
+            obj.init(cParams);
         end
-        
-        function cut(obj)
-           ft_sort =  sort(abs(obj.ft(:)));
-           thresh = ft_sort(floor((1-obj.keep)*length(ft_sort)));
-           ind = abs(obj.ft)>thresh;       %Find small index;
-           obj.ft = obj.ft.*ind;            %Theshold small indices
+
+    end
+
+    methods (Access = private)
+
+        function init(obj,cParams)
+            switch cParams.type 
+                case 'TEMPORAL'
+                   obj.name = cParams.name;
+                   obj.loadAudioSignal();
+                   obj.dim = size(obj.signal,2);                  
+                   obj.computeFourierRepresentation();            
+
+                case 'FREQUENCY'
+                   obj.freq = cParams.freq;
+                   obj.dim = size(obj.freq,2);                   
+                   obj.computeTimeRepresentation();
+                   
+
+                case 'WAVELET'
+
+            end
         end
-        
-        function  imageread (obj)
-           A = imread(obj.id);
+
+        function  loadImage(obj)
+           A = imread(obj.name);
            obj.signal=rgb2gray(A);
         end
         
-        function audioread (obj)   
-            [obj.signal, obj.Fs] = audioread(obj.id);
-        end
-        
-        function audioload (obj)
-            if (strcmp(obj.id,'chirp'))
-                load('chirp','Fs','y'); obj.signal = y;
-            elseif (strcmp(obj.id,'gong'))
-                load('gong','Fs','y'); obj.signal = y;
-            elseif (strcmp(obj.id,'train'))
-                load('train','Fs','y'); obj.signal = y;
-            elseif (strcmp(obj.id,'splat'))
-                load('splat','Fs','y'); obj.signal = y;
-            elseif (strcmp(obj.id,'laughter'))
-                load('laughter','Fs','y'); obj.signal = y;
+        function loadAudioSignal(obj)
+            if (strcmp(obj.name,'chirp'))
+                load('chirp','Fs','y'); 
+            elseif (strcmp(obj.name,'gong'))
+                load('gong','Fs','y'); 
+            elseif (strcmp(obj.name,'train'))
+                load('train','Fs','y');
+            elseif (strcmp(obj.name,'splat'))
+                load('splat','Fs','y');
+            elseif (strcmp(obj.name,'laughter'))
+                load('laughter','Fs','y'); 
             else
-                cprintf('err', 'Error id must be chirp, gong, train, splat or laughter \n');return;
+                cprintf('err', 'Error name must be chirp, gong, train, splat or laughter \n');return;
             end
+            obj.signal = y;
         end
+
+        function computeFourierRepresentation(obj)
+              s.data = obj;
+              fr = FourierTransformer.directTransform(s);
+              obj.freq = fr;
+        end
+
+        function computeTimeRepresentation(obj)
+              s.data = obj;
+              fr = FourierTransformer.inverseTransform(s);
+              obj.signal = fr;
+        end        
+
+
     end
 end
 
