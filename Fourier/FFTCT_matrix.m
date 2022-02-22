@@ -43,14 +43,14 @@ end
 function y = fft_neg_frec_cut(x)
 %Esta funcion se debe aplicar antes de eliminar el zero padding
 N = length (x);
-y = [x(1:N/2+1); zeros(N/2+1,1)];
+%y = [x(1:N/2+1); zeros(N/2+1,1)];
 
-% %Invertir las frecuencias positivas para obtener las negativas
-% %Importante, la DC y la de Nyquist no estan repetidas
-% y_neg = x(2:N/2);
-% y_neg_fliped = flipud(y_neg);
-% 
-% y = [x(1:N/2+1); y_neg_fliped];
+%Invertir las frecuencias positivas para obtener las negativas
+%Importante, la DC y la de Nyquist no estan repetidas
+y_neg = x(2:N/2);
+y_neg_fliped = flipud(conj(y_neg));
+
+y = [x(1:N/2+1); y_neg_fliped];
 end
 
 function x_cut = fft_cut_padding(x,n_before_padding)
