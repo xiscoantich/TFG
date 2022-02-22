@@ -8,7 +8,7 @@ x = makepowerof2(x);
 y = FFTCT_matrix_recursive(x);
 
 %Metodo 1
-%y = fft_neg_frec_cut (y); %Esta linea no se si se deberia ocultar
+y = fft_neg_frec_cut (y); %Esta linea no se si se deberia ocultar y se deberia arreglar porque ni la priema ni la ultima frequencia tienen un dupicado!!
 y = y(1:n_before_padding,:);  % get rid of padding before returning 
 
 %Medodo 2
@@ -43,7 +43,14 @@ end
 function y = fft_neg_frec_cut(x)
 %Esta funcion se debe aplicar antes de eliminar el zero padding
 N = length (x);
-y = [x(1:N/2); zeros(N/2,1)];
+y = [x(1:N/2+1); zeros(N/2+1,1)];
+
+% %Invertir las frecuencias positivas para obtener las negativas
+% %Importante, la DC y la de Nyquist no estan repetidas
+% y_neg = x(2:N/2);
+% y_neg_fliped = flipud(y_neg);
+% 
+% y = [x(1:N/2+1); y_neg_fliped];
 end
 
 function x_cut = fft_cut_padding(x,n_before_padding)
