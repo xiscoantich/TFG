@@ -24,6 +24,9 @@ classdef FourierTransformer < handle
     end
     
     methods (Access = private)
-        %Aqui deberia ir FFT i FFT2
+        %Aqui deberia ir FFT, FFT2, IFFT, IFFT2
+        %Sale un error y no se como solucionarlo
+        %Como las funciones se utilizan unas a otras no pueden ser
+        %estaticas, y sugen problemas 
     end
 end
