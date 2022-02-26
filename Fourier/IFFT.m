@@ -1,6 +1,6 @@
 function y = IFFT(x,n_before_padding)
 %Type of ift: matlab, FFT, Coley-Tukey, idft
-    type_ft = 'matrix'; %
+    type_ft = 'FFT'; %
     switch type_ft
         case 'matlab'
             y = ifft(x);

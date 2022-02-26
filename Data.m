@@ -65,8 +65,8 @@ classdef Data < handle
 
         function computeFourierRepresentation(obj)
               s.data = obj;
-              fr = FourierTransformer.directTransform(s);
-              obj.freq = fr;
+              ft = FourierTransformer.directTransform(s);
+              obj.freq = ft;
         end
 
         function computeTimeRepresentation(obj)

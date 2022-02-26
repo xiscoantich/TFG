@@ -16,7 +16,7 @@ classdef FourierTransformer < handle
                 data = cParams.data;
                 freq = data.freq;
                 if data.dim == 1
-                    signal = IFFTCT(freq);
+                    signal = IFFT(freq);
                 else
                     signal = IFFT2CT(freq); 
                 end

@@ -8,8 +8,8 @@ x = makepowerof2(x);
 y = FFTCT_matrix_recursive(x);
 
 %Metodo 1
-y = fft_neg_frec_cut (y); %Esta linea no se si se deberia ocultar y se deberia arreglar porque ni la priema ni la ultima frequencia tienen un dupicado!!
-y = y(1:n_before_padding,:);  % get rid of padding before returning 
+%  y = fft_neg_frec_cut (y); %Esta linea no se si se deberia ocultar y se deberia arreglar porque ni la priema ni la ultima frequencia tienen un dupicado!!
+%  y = y(1:n_before_padding,:);  % get rid of padding before returning 
 
 %Medodo 2
 %y = fft_cut_padding(y,n_before_padding);
@@ -43,34 +43,38 @@ end
 function y = fft_neg_frec_cut(x)
 %Esta funcion se debe aplicar antes de eliminar el zero padding
 N = length (x);
-%y = [x(1:N/2+1); zeros(N/2+1,1)];
+y = [x(1:N/2+1); zeros(N/2+1,1)];
+
+%Las frequencias de DC y la Nyquist las dividimos entre la mitad porque
+%despues al hacer la inversa multipicamos la energia por dos porque hemos
+%eliminado las frequencias negativas
+% y(1) = y(1)/2;
+% y(N/2+1) = y(N/2+1)/2;
+
 
 %Invertir las frecuencias positivas para obtener las negativas
 %Importante, la DC y la de Nyquist no estan repetidas
-y_neg = x(2:N/2);
-y_neg_fliped = flipud(conj(y_neg));
-
-y = [x(1:N/2+1); y_neg_fliped];
+% y_neg = x(2:N/2);
+% y_neg_fliped = flipud(conj(y_neg));
+% 
+% y = [x(1:N/2+1); y_neg_fliped];
 end
 
 function x_cut = fft_cut_padding(x,n_before_padding)
 %Intercala la part positiva y negativa del vector x
 %Alternate
 N = length (x);
-p = x(1:N/2); %Positive
-n = x(N/2+1:end); %Negative
+p = x(1:N/2+1); %Positive
+n = x(N/2+2:end); %Negative
 n = flipud(n);
 
-x_alternate = zeros(N,1);
-x_alternate(1:2:end) = p;
-x_alternate(2:2:end) = n;
+N_cut = N-n_before_padding;
 
-%Cut
-x_alternate_cut = x_alternate(1:n_before_padding,:);
+n_cut_p = ceil(N_cut/2);
+n_cut_n = fix(N_cut/2);
+p_cut = p(1:end-n_cut_p);
+n_cut = n(1:end-n_cut_n);
 
-%Return to the original shape
-p_cut = x_alternate_cut(1:2:end);
-n_cut = x_alternate_cut(2:2:end);
 n_cut = flipud(n_cut);
 x_cut = [p_cut; n_cut];
 end
