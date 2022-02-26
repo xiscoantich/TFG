@@ -6,10 +6,10 @@ classdef FourierTransformer < handle
             data = cParams.data;
             signal = data.signal;
             if data.dim == 1
-                freq = FFTCT_matrix(signal);
+                freq = FFT(signal);
             else
-                freq = FFT2CT(signal);
-            end
+                freq = FFT2(signal);
+            end 
         end
         
         function signal = inverseTransform(cParams)
@@ -22,6 +22,8 @@ classdef FourierTransformer < handle
                 end
         end
     end
-
-
+    
+    methods (Access = private)
+        %Aqui deberia ir FFT i FFT2
+    end
 end
