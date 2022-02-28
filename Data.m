@@ -6,6 +6,24 @@ classdef Data < handle
         signal
         dim
         freq
+        
+        %Wavelet
+        wave
+        period
+        scale
+        coi
+        dj
+        paramout
+        k
+        
+        %Esto hace falta?
+        pad
+        dj
+        s0
+        J1
+        mother
+        param
+        
     end
     
     properties (Access = private)
@@ -23,21 +41,36 @@ classdef Data < handle
     methods (Access = private)
 
         function init(obj,cParams)
-            switch cParams.type 
+            switch cParams.type
                 case 'TEMPORAL'
-                   obj.name = cParams.name;
-                   obj.loadAudioSignal();
-                   obj.dim = size(obj.signal,2);                  
-                   obj.computeFourierRepresentation();            
-
+                    obj.name = cParams.name;
+                    obj.loadAudioSignal();
+                    obj.dim = size(obj.signal,2);
+                    obj.computeFourierRepresentation();
+                    
                 case 'FREQUENCY'
-                   obj.freq = cParams.freq;
-                   obj.dim = size(obj.freq,2);                   
-                   obj.computeTimeRepresentation();
-                   
-
-                case 'WAVELET'
-
+                    obj.freq = cParams.freq;
+                    obj.dim = size(obj.freq,2);
+                    obj.computeTimeRepresentationFromFreq();
+                    
+                case 'TEMPORAL WAVE'
+                    obj.name = cParams.name;
+                    obj.loadAudioSignal();
+                    obj.signal = cParams.signal;
+                    obj.dt = cParams.dt;
+                    obj.pad = cParams.pad;
+                    obj.dj = cParams.dj;
+                    obj.s0 = cParams.dj;
+                    obj.J1 = cParams.J1;
+                    obj.mother = cParams.mother;
+                    obj.param = cParams.param;
+                    obj.dim = size(obj.signal,2);
+                    obj.computeWaveletRepresentation();
+                    
+                case 'FREQUENCY WAVE'
+                    obj.wave = cParams.wave;
+                    obj.dim = size(obj.freq,2);
+                    obj.computeTimeRepresentationFromWave();
             end
         end
 
@@ -64,18 +97,35 @@ classdef Data < handle
         end
 
         function computeFourierRepresentation(obj)
-              s.data = obj;
-              ft = FourierTransformer.directTransform(s);
-              obj.freq = ft;
+            s.data = obj;
+            ft = FourierTransformer.directTransform(s);
+            obj.freq = ft;
         end
-
-        function computeTimeRepresentation(obj)
-              s.data = obj;
-              fr = FourierTransformer.inverseTransform(s);
-              obj.signal = fr;
-        end        
-
-
+        
+        function computeWaveletRepresentation(obj)
+            s.data = obj;
+            [wave,period,scale,coi, dj, paramout, k] = WaveletTransformer.directTransform(s);
+            obj.wave = wave;
+            obj.period = period;
+            obj.scale = scale;
+            obj.coi = coi;
+            obj.dj = dj;
+            obj.paramout = paramout;
+            obj.k = k;
+        end
+        
+        function computeTimeRepresentationFromFreq(obj)
+            s.data = obj;
+            ift = FourierTransformer.inverseTransform(s);
+            obj.signal = ift;
+        end
+        
+        function computeTimeRepresentationFromWave(obj)
+            s.data = obj;
+            iwt = WaveletTransformer.inverseTransform(s);
+            obj.signal = iwt;
+        end
+        
     end
 end
 

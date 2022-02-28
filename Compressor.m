@@ -10,7 +10,7 @@ classdef Compressor < handle
     
     properties (Access = private)
        keep
-       signal
+       signal %Es necesario?
     end
     
     methods (Access = public)
@@ -36,7 +36,7 @@ classdef Compressor < handle
         end
         
         function  fCut = cutFrequency(obj)
-            freq = obj.signal.freq;
+            freq = obj.signal.freq; %Esto esta bien?
             if obj.keep == 1
                 fCut = freq;
             else

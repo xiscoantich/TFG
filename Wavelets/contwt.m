@@ -104,7 +104,7 @@
 %  Boulder, CO 80301, USA                 Boulder, CO 80305-3328, USA
 %  E-mail: chris[AT]rsinc[DOT]com         E-mail: compo[AT]colorado[DOT]edu
 %----------------------------------------------------------------------------
-function [wave,period,scale,coi, dj, paramout, k] = contwt(Y,dt,pad,dj,s0,J1,mother,param);
+function [wave,period,scale,coi, dj, paramout, k] = contwt(Y,dt,pad,dj,s0,J1,mother,param)
 
 folder = fileparts(which(mfilename)); 
 % Add that folder plus all subfolders to the path.
@@ -131,9 +131,9 @@ if (mother == -1), mother = 'MORLET'; end
 x(1:n1) = Y - mean(Y);
 %x(1:n1) = Y;
 
-% if (pad == 1)
-% 	x = makepowerof2(x);
-% end
+if (pad == 1)
+	x = makepowerof2(x);
+end
 n = length(x);
 
 %....construct wavenumber array used in transform [Eqn(5)]
@@ -143,22 +143,7 @@ k = [0., k, -k(fix((n-1)/2):-1:1)];
 
 %....compute FFT of the (padded) time series
 
-
 f = fft(x); % [Eqn(3)] 
-% f1 = FFTCT_matrix(x); %Se debe cambiar el vector culumna a vector fila 
-% f = reshape(FFTCT_matrix(x),1,[]);
-% error = abs(f-f1);
-% figure
-% plot(error); %Aqui podemos ver como aparece un erorr en fourier
-% title('Error en los coeficientes de Fourier al hacer contwt')
-% ylabel('Error')
-
-% figure 
-% y = 1:1:length(f1);
-% plot(y,abs(f1));hold on;
-% plot(y,f);
-
-
 
 %....construct SCALE array & empty PERIOD & WAVE arrays
 scale = s0*2.^((0:J1)*dj);
@@ -184,7 +169,7 @@ end
 function [y] = makepowerof2(x)
 N = length(x);
 y = x;
-while mod(log(N)/log(2),1)~=0 
+while mod(log(N)/log(2),1)~=0
     y(N+1) = 0;
     N = N+1;
 end
