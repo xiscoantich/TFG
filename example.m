@@ -2,7 +2,8 @@ function example
 folder = fileparts(which(mfilename)); 
 addpath(genpath(folder));  
 d.type = 'TEMPORAL';
-d.name = 'sinus';
+d.name = 'train';
+d.motherwave = 'MORLET';
 a = Data(d);
 
 
@@ -20,6 +21,4 @@ figure()
 hold on
 a.plotFrequency();
 aCompressed.plotFrequency()
-
-
 end

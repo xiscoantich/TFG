@@ -4,27 +4,11 @@ classdef Data < handle
         signal
         dim
         freq
-    end
-    
-    properties (Access = private)
-        %Wavelet
         wave
-        period
-        scale
-        coi
-        dj
-        paramout
-        k
-        
-        %Esto hace falta?
-        pad
-        s0
-        J1
-        mother
-        param
-        
+        motherwave
+        dt
     end
-    
+     
     properties (Access = private)
         name
     end
@@ -54,7 +38,7 @@ classdef Data < handle
                     obj.loadAudioSignal();
                     obj.dim = size(obj.signal,2);
                     obj.computeFourierRepresentation();
-                %    obj.computeWaveletRepresentation();                    
+                    obj.computeWaveletRepresentation();                    
                     
                 case 'FREQUENCY'
                     obj.freq = cParams.freq;
@@ -95,10 +79,13 @@ classdef Data < handle
         function loadAudioSignal(obj)
             switch obj.name
                 case {'chirp','gong','train','splat','laughter'}
+                    load(obj.name,'Fs','y');
                     obj.signal = y;
+                    obj.dt = 1/Fs;
                 case {'sinus'}
-                    t = linspace(0,1,100);
-                    w = 10;
+                    obj.dt = 0.01;
+                    t = 0:obj.dt:1;
+                    w = 1000;
                     obj.signal(:,1) = sin(w*t);
             end
         end
@@ -111,15 +98,8 @@ classdef Data < handle
         
         function computeWaveletRepresentation(obj)
             s.data = obj;
-            w = WaveletTransformer();
-            [wave,period,scale,coi, dj, paramout, k] = w.directTransform(s);
-            obj.wave = wave;
-            obj.period = period;
-            obj.scale = scale;
-            obj.coi = coi;
-            obj.dj = dj;
-            obj.paramout = paramout;
-            obj.k = k;
+            wt = WaveletTransformer();
+            [obj.wave] = wt.directTransform(s);
         end
         
         function computeTimeRepresentationFromFreq(obj)

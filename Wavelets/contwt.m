@@ -110,9 +110,9 @@ folder = fileparts(which(mfilename));
 % Add that folder plus all subfolders to the path.
 addpath(genpath(folder));   
 
-if (nargin < 8) |isempty(param), param = -1; end
-if (nargin < 7) |isempty(mother) mother = -1; end
-if (nargin < 6) |isempty(J1), J1 = -1; end %updated handling of defaults, JE oct 14 2014
+if (nargin < 8) | isempty(param), param = -1; end
+if (nargin < 7) | isempty(mother) mother = -1; end
+if (nargin < 6) | isempty(J1), J1 = -1; end %updated handling of defaults, JE oct 14 2014
 if (nargin < 5) | isempty(s0), s0 = -1; end
 if (nargin < 4) | isempty(dj), dj = -1; end
 if (nargin < 3) | isempty(pad), pad = 0; end

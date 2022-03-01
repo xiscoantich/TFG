@@ -1,53 +1,45 @@
 classdef WaveletTransformer < handle
 
     properties (Access = private)
-
+        scale
+        paramout
+        k
     end
 
     methods (Access = public)
 
-        function [wave,period,scale,coi, dj, paramout, k] = directTransform(obj,cParams)
-            %Aqui tengo que pasar obj para que lea las funciones del propio
-            %transformer?
+        function wave = directTransform(obj,cParams)
             data = cParams.data;
             signal = data.signal;
+            mother = data.motherwave;
             dt = data.dt;
-            pad = data.pad;
-            dj = data.dj;
-            s0 = data.dj;
-            J1 = data.J1;
-            mother = data.mother;
-            param = data.param;
-            
             if data.dim == 1
-                [wave,period,scale,coi, dj, paramout, k] = contwt(signal,dt,pad,dj,s0,J1,mother,param);
+                [wave,~,obj.scale,~,~,obj.paramout, obj.k] = obj.contwt(signal,dt,[],[],[],[],mother,[]);
             else
-                [wave,period,scale,coi, dj, paramout, k] = contwt2(signal,dt,pad,dj,s0,J1,mother,param);
+                [wave,~,obj.scale,~,~, obj.paramout, obj.k] = obj.contwt2(signal,dt,[],[],[],[],mother,[]);
             end
         end
         
         function signal = inverseTransform(obj,cParams)
             data = cParams.data;
-            wave = cParams.data;
-            mother = cParams.data;
-            scale = cParams.data;
-            param = cParams.data;
-            k = cParams.data;
+            wave = data.wave;
+            mother = data.motherwave;
+           
             if data.dim == 1
-                signal = invcwt(wave, mother, scale, param, k);
+                signal = obj.invcwt(wave, mother, obj.scale, obj.paramout, obj.k);
             else
-                signal = invcwt2(wave, mother, scale, param, k);
+                signal = obj.invcwt2(wave, mother, obj.scale, obj.paramout, obj.k);
             end
         end
     end
     
     methods (Access = private)
         
-        function [wave,period,scale,coi, dj, paramout, k] = contwt(Y,dt,pad,dj,s0,J1,mother,param)
+        function [wave,period,scale,coi, dj, paramout, k] = contwt(obj,Y,dt,pad,dj,s0,J1,mother,param)
             
             if (nargin < 8) |isempty(param), param = -1; end
             if (nargin < 7) |isempty(mother) mother = -1; end
-            if (nargin < 6) |isempty(J1), J1 = -1; end %updated handling of defaults, JE oct 14 2014
+            if (nargin < 6) |isempty(J1), J1 = -1; end
             if (nargin < 5) | isempty(s0), s0 = -1; end
             if (nargin < 4) | isempty(dj), dj = -1; end
             if (nargin < 3) | isempty(pad), pad = 0; end
@@ -67,7 +59,7 @@ classdef WaveletTransformer < handle
             %x(1:n1) = Y;
             
             if (pad == 1)
-                x = makepowerof2(x);
+                x = obj.makepowerof2(x);
             end
             n = length(x);
             
