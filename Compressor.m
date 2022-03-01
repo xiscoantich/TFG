@@ -10,7 +10,7 @@ classdef Compressor < handle
     
     properties (Access = private)
        keep
-       signal %Es necesario?
+       signal %No seria freq?
     end
     
     methods (Access = public)
