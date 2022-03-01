@@ -1,5 +1,9 @@
 classdef WaveletTransformer < handle
 
+    properties (Access = private)
+
+    end
+
     methods (Access = public)
 
         function [wave,period,scale,coi, dj, paramout, k] = directTransform(obj,cParams)
@@ -132,4 +136,6 @@ classdef WaveletTransformer < handle
                 N = N+1;
             end
         end
+
+    end
 end
