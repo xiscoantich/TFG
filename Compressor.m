@@ -10,7 +10,7 @@ classdef Compressor < handle
     
     properties (Access = private)
        keep
-       signal %Es necesario?
+       data %Es necesario?
     end
     
     methods (Access = public)
@@ -20,7 +20,8 @@ classdef Compressor < handle
         end
 
         function cData = computeCompressedSignal(obj)
-            freqCut = obj.cutFrequency();
+            freq = obj.data.freq;             
+            freqCut = obj.cutFrequency(freq);
             s.type = 'FREQUENCY';
             s.freq = freqCut;
             cData = Data(s);
@@ -32,11 +33,10 @@ classdef Compressor < handle
         
         function init(obj,cParams)
             obj.keep = cParams.keep;
-            obj.signal = cParams.signal;
+            obj.data = cParams.data;
         end
         
-        function  fCut = cutFrequency(obj)
-            freq = obj.signal.freq; %Esto esta bien?
+        function  fCut = cutFrequency(obj,freq)
             if obj.keep == 1
                 fCut = freq;
             else
