@@ -31,6 +31,7 @@ classdef Compressor < handle
             s.type = 'FREQUENCY';
             s.freq = freqCut;
             s.wave = wCut;
+            s.wave_info = obj.data.wave_info;
             
             cData = Data(s);
         end

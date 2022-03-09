@@ -1,9 +1,10 @@
 classdef WaveletTransformer < handle
 
-    properties (Access = private)
+    properties (Access = public)
         scale
         paramout
         k
+        motherwave
     end
 
     methods (Access = public)
@@ -12,6 +13,7 @@ classdef WaveletTransformer < handle
             data = cParams.data;
             signal = data.signal;
             mother = data.motherwave;
+            obj.motherwave = data.motherwave;
             dt = data.dt;
             if data.dim == 1
                 [wave,~,obj.scale,~,~,obj.paramout, obj.k] = obj.contwt(signal,dt,[],[],[],[],mother,[]);
@@ -24,11 +26,14 @@ classdef WaveletTransformer < handle
             data = cParams.data;
             wave = data.wave;
             mother = data.motherwave;
+            scale = data.wave_info.scale;
+            paramout = data.wave_info.paramout;
+            k = data.wave_info.k;
            
             if data.dim == 1
-                signal = obj.invcwt(wave, mother, obj.scale, obj.paramout, obj.k);
+                signal = obj.invcwt(wave, mother, scale, paramout, k);
             else
-                signal = obj.invcwt2(wave, mother, obj.scale, obj.paramout, obj.k);
+                signal = obj.invcwt2(wave, mother, scale, paramout, k);
             end
         end
     end
@@ -91,6 +96,10 @@ classdef WaveletTransformer < handle
         end
         
         function Xrec = invcwt(obj,wvcfs, mother, scale, param, k)
+            
+            if isempty(mother)
+                mother = 'MORLET';
+            end
             
             % take the real part of the wavelet transform.
             Wr = real(wvcfs);
