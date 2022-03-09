@@ -1,5 +1,9 @@
 classdef FourierTransformer < handle
 
+    properties (Access = public)
+        win_type_stft
+    end
+    
     methods (Access = public)
 
         function freq = directTransform(obj,cParams)
@@ -25,7 +29,7 @@ classdef FourierTransformer < handle
     
     methods (Access = private)
         function freq = FFT(obj,signal)
-            %Type of ft: matlab, matrix, dft
+            %Type of ft: matlab, matrix, dft,stft
             type_ft = 'matrix'; %
             switch type_ft
                 case 'matlab'
@@ -34,6 +38,8 @@ classdef FourierTransformer < handle
                     freq = obj.fft_matrix(signal);
                 case 'dft'
                     freq = obj.dft(signal);
+                case 'stft'
+                    freq = obj.stft(signal);
             end
         end
         
@@ -84,6 +90,61 @@ classdef FourierTransformer < handle
             end
         end
         
+        function y = stft (obj,x)
+            switch obj.win_type_stft
+                
+                case  'cheby'
+                    win = chebwin(N).';
+                    
+                case 'blackman'
+                    win = blackman(N).';
+                    
+                case 'hamm'
+                    win = hamming(N).';
+                    
+                case 'hann'
+                    win = hanning(N).';
+                    
+                case 'kaiser'
+                    beta = 5;
+                    win = kaiser(N,beta).';
+                    
+                case 'gauss'
+                    win = gausswin(N).';
+                    
+                otherwise  % otherwise use the rectangular window
+                    win = ones(1,N);
+            end
+            
+            %% Input Signal Segmentation Params.
+            x = x(:).';
+            L = length(x);
+            
+            % Number of segments (frames) the signal is divided to.
+            K = floor((L-M)/(N-M));
+            
+            %% Number of Unique FFT Points.
+            NUPs = Nfft;
+            if isreal(x)
+                if mod(Nfft,2)   % if N is odd.
+                    NUPs = (Nfft+1)/2;
+                else             % if N is even.
+                    NUPs = Nfft/2+1;
+                end
+            end
+            
+            %% STFT Calculation
+            X = zeros(N,K);
+            S = zeros(Nfft,K);
+            
+            for k=1:K
+                X(:,k) = x((k-1)*(N-M)+1:k*N - (k-1)*M).*win;
+                S(:,k) = fft(X(:,k),Nfft);
+            end
+            
+            S = S(1:NUPs,:);
+        end
+        
         function y = FFT2 (obj,x)
             m=size(x,2); %columnas
             for i=1:m
@@ -94,6 +155,7 @@ classdef FourierTransformer < handle
                 y(i,:)=obj.FFT(x1(i,:)); %FFT por filas
             end
         end
+        
         
         function y = IFFT(obj,x)
             %Type of ift: matlab, FFT, Coley-Tukey, idft

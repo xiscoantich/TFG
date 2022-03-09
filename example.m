@@ -21,4 +21,12 @@ figure()
 hold on
 a.plotFrequency();
 aCompressed.plotFrequency()
+
+figure()
+hold on 
+a.plotWave()
+aCompressed.plotWave()
+
+
+
 end

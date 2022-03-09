@@ -8,7 +8,7 @@ classdef WaveletTransformer < handle
 
     methods (Access = public)
 
-        function wave = directTransform(obj,cParams)
+        function [wave] = directTransform(obj,cParams)
             data = cParams.data;
             signal = data.signal;
             mother = data.motherwave;
@@ -90,7 +90,7 @@ classdef WaveletTransformer < handle
             return
         end
         
-        function Xrec = invcwt(wvcfs, mother, scale, param, k)
+        function Xrec = invcwt(obj,wvcfs, mother, scale, param, k)
             
             % take the real part of the wavelet transform.
             Wr = real(wvcfs);

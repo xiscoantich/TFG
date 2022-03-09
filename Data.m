@@ -4,6 +4,7 @@ classdef Data < handle
         signal
         dim
         freq
+        sfreq
         wave
         motherwave
         dt
@@ -26,6 +27,12 @@ classdef Data < handle
         function plotFrequency(obj)
             plot(real(obj.freq))
         end
+        
+        function plotWave(obj)
+            imagesc(abs(obj.wave)) 
+            xlabel('Time (integer index)') 
+            ylabel('Scale')
+        end
 
     end
 
@@ -44,7 +51,8 @@ classdef Data < handle
                     obj.freq = cParams.freq;
                     obj.dim = size(obj.freq,2);
                     obj.computeTimeRepresentationFromFreq();
-              %      obj.computeWaveletRepresentation();                    
+                    obj.wave = cParams.wave;
+                    obj.computeTimeRepresentationFromWave();                    
                     
                     
                 case 'TEMPORAL WAVE'
@@ -111,7 +119,8 @@ classdef Data < handle
         
         function computeTimeRepresentationFromWave(obj)
             s.data = obj;
-            iwt = WaveletTransformer.inverseTransform(s);
+            wt = WaveletTransformer();
+            iwt = wt.inverseTransform(s);
             obj.signal = iwt;
         end
         

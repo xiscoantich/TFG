@@ -6,6 +6,7 @@ classdef Compressor < handle
     
     properties (Access = private)
         frequencyCut
+        waveCut
     end
     
     properties (Access = private)
@@ -23,11 +24,16 @@ classdef Compressor < handle
         function cData = computeCompressedSignal(obj)
             freq = obj.data.freq;             
             freqCut = obj.cutFrequency(freq);
+            
+            wave = obj.data.wave;
+            wCut = obj.cutWave(wave);
+            
             s.type = 'FREQUENCY';
             s.freq = freqCut;
+            s.wave = wCut;
+            
             cData = Data(s);
         end
-        
     end
     
     methods (Access = private)
@@ -48,6 +54,20 @@ classdef Compressor < handle
             end 
             obj.frequencyCut = fCut;
         end
+        
+        function  wCut = cutWave(obj,wave)
+            if obj.keep == 1
+                wCut = wave;
+            else
+                waveSort = sort(abs(wave(:)));
+                thresh = waveSort(floor((1-obj.keep)*length(waveSort)));
+                ind    = abs(wave)>thresh;   
+                wCut = wave.*ind;           
+            end 
+            obj.waveCut = wCut;
+        end
+        
+
         
     end
     
