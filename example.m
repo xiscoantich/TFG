@@ -2,7 +2,7 @@ function example
 folder = fileparts(which(mfilename)); 
 addpath(genpath(folder));  
 d.type = 'TEMPORAL';
-d.name = 'train';
+d.name = 'sinus';
 d.motherwave = 'MORLET';
 d.type_ft = 'matrix';
 

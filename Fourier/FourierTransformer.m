@@ -183,11 +183,11 @@ classdef FourierTransformer < handle
             switch obj.type_ft
                 case 'matlab'
                     y = ifft(x);
-                case 'FFT'
+                case 'matrix'
                     y = obj.ifft_FFT(x);
                 case 'Coley-Tukey'
                     y = obj.ifft_ct(x);
-                case 'idft'
+                case 'dft'
                     y = obj.idft(x);
                 otherwise %Caso en el que este vacio o error?
                     y = ifft(x);
