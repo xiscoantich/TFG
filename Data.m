@@ -4,6 +4,7 @@ classdef Data < handle
         signal
         rec_f
         rec_w
+        rec_pca
         dim
         freq
         sfreq
@@ -11,6 +12,10 @@ classdef Data < handle
         motherwave
         dt
         wave_info
+        type_ft
+        S
+        U
+        V
     end
      
     properties (Access = private)
@@ -29,9 +34,15 @@ classdef Data < handle
            title('Signal');
            if(isempty(obj.rec_f) == false)
                plot(obj.rec_f,'DisplayName','Rec Fourier');
+               hold on;
            end
            if(isempty(obj.rec_w) == false)
                plot(obj.rec_w,'DisplayName','Rec Wavelets');
+               hold on;
+           end
+           if(isempty(obj.rec_pca) == false)
+               plot(obj.rec_pca,'DisplayName','Rec PCA');
+               hold on;
            end
            legend('show');
         end
@@ -52,26 +63,52 @@ classdef Data < handle
             hold on
             imagesc(abs(obj.wave))
         end
+        
+        function plotPCAInfo(obj)
+            S = obj.S;
+            subplot (1,2,1)
+            semilogy(diag(S),'k','LineWidth',2)
+            grid on
+            xlabel('r')
+            ylabel('Singular value,\sigma_r')
+            %xlim([-50,1550])
+            subplot(1,2,2)
+            plot(cumsum(diag(S))/sum(diag(S)),'k','LineWidth',2)
+            grid on
+            xlabel('r')
+            ylabel('Cumulative Energy')
+            %xlim([-50,1550])
+            ylim([0 1.1])
+        end
     end
 
     methods (Access = private)
 
         function init(obj,cParams)
+            
             switch cParams.type
+                
                 case 'TEMPORAL'
                     obj.name = cParams.name;
                     obj.loadAudioSignal();
                     obj.dim = size(obj.signal,2);
+                    obj.type_ft = cParams.type_ft;
                     obj.computeFourierRepresentation();
-                    obj.computeWaveletRepresentation();                    
+                    obj.computeWaveletRepresentation();
+                    obj.computePCARepresentation()
                     
                 case 'FREQUENCY'
                     obj.freq = cParams.freq;
                     obj.dim = size(obj.freq,2);
+                    obj.type_ft = cParams.type_ft;
                     obj.computeTimeRepresentationFromFreq();
                     obj.wave = cParams.wave;
                     obj.wave_info = cParams.wave_info; 
                     obj.computeTimeRepresentationFromWave(); 
+                    obj.U = cParams.U;
+                    obj.S = cParams.S;
+                    obj.V = cParams.V;
+                    obj.computeTimeRepresentationFromPCA()
                     %Aqui estoy reescribiendo la reconstruccion de la señal
                     %Esto se deberia separar de en dos casos diferentes.
                     %El caso en el que reescribo a partir de la frecuencia
@@ -135,11 +172,20 @@ classdef Data < handle
             obj.wave_info = wt;
         end
         
+        function computePCARepresentation(obj)
+            s.data = obj;
+            pca = PCATransformer();
+            [obj.U,obj.S,obj.V] = pca.directTransform(s);
+        end
+        
         function computeTimeRepresentationFromFreq(obj)
             s.data = obj;
             ft = FourierTransformer();
             ift = ft.inverseTransform(s);
             obj.rec_f = ift;
+            %Aqui tengo que hacer para que tambien tenga la informacion de
+            %que tipo de fft quiere hacer que deberia ser igual que la
+            %anterior
         end
         
         function computeTimeRepresentationFromWave(obj)
@@ -149,6 +195,12 @@ classdef Data < handle
             obj.rec_w = iwt;
         end
         
+        function computeTimeRepresentationFromPCA(obj)
+            s.data = obj;
+            pca = PCATransformer();
+            ipca = pca.inverseTransform(s);
+            obj.rec_pca = ipca;
+        end
     end
 end
 

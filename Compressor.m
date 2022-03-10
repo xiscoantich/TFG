@@ -7,6 +7,9 @@ classdef Compressor < handle
     properties (Access = private)
         frequencyCut
         waveCut
+        Ucut
+        Scut
+        Vcut
     end
     
     properties (Access = private)
@@ -24,14 +27,24 @@ classdef Compressor < handle
         function cData = computeCompressedSignal(obj)
             freq = obj.data.freq;             
             freqCut = obj.cutFrequency(freq);
+            s.type_ft = obj.data.type_ft;
             
             wave = obj.data.wave;
             wCut = obj.cutWave(wave);
+            
+            U = obj.data.U;
+            S = obj.data.S;
+            V = obj.data.V;
+            
+            [Ucut,Scut,Vcut] = obj.cutPCA(U,S,V);
             
             s.type = 'FREQUENCY';
             s.freq = freqCut;
             s.wave = wCut;
             s.wave_info = obj.data.wave_info;
+            s.U = Ucut;
+            s.S = Scut;
+            s.V = Vcut;
             
             cData = Data(s);
         end
@@ -68,7 +81,19 @@ classdef Compressor < handle
             obj.waveCut = wCut;
         end
         
-
+        function [Ucut,Scut,Vcut] = cutPCA(obj,U,S,V)  
+            nx = size(U,1);
+            ny = size(V,2);
+            %r = round((nx*ny)*(obj.keep/3));
+            %r = round(length(S)*(obj.keep/3));
+            r = 1;
+            Ucut = U(:,1:r);
+            Scut = S(1:r,1:r);
+            Vcut = V(:,1:r);
+            obj.Ucut = Ucut;
+            obj.Scut = Scut;
+            obj.Vcut = Vcut;
+        end
         
     end
     

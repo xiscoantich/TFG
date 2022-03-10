@@ -2,6 +2,7 @@ classdef FourierTransformer < handle
 
     properties (Access = public)
         win_type_stft
+        type_ft
     end
     
     methods (Access = public)
@@ -9,6 +10,7 @@ classdef FourierTransformer < handle
         function freq = directTransform(obj,cParams)
             data = cParams.data;
             signal = data.signal;
+            obj.type_ft = data.type_ft;
             if data.dim == 1
                 freq = obj.FFT(signal);
             else
@@ -19,6 +21,7 @@ classdef FourierTransformer < handle
         function signal = inverseTransform(obj,cParams)
                 data = cParams.data;
                 freq = data.freq;
+                obj.type_ft = data.type_ft;
                 if data.dim == 1
                     signal = obj.IFFT(freq);
                 else
@@ -30,8 +33,7 @@ classdef FourierTransformer < handle
     methods (Access = private)
         function freq = FFT(obj,signal)
             %Type of ft: matlab, matrix, dft,stft
-            type_ft = 'matrix'; %
-            switch type_ft
+            switch obj.type_ft
                 case 'matlab'
                     freq = fft(signal);
                 case 'matrix'
@@ -40,6 +42,9 @@ classdef FourierTransformer < handle
                     freq = obj.dft(signal);
                 case 'stft'
                     freq = obj.stft(signal);
+                otherwise %Caso en el que no este bien o vacio??
+                    cprintf('err', 'Type of ft: matlab, matrix, dft,stft \n Default: matlab \n');
+                    freq = fft(signal); 
             end
         end
         
@@ -90,9 +95,25 @@ classdef FourierTransformer < handle
             end
         end
         
-        function y = stft (obj,x)
+        function S = stft (obj,x)
+            
+%            Inputs:
+%            x is a row vector that contains the signal to be examined.
+%            N is the selected length of the window in samples.
+%            M is the selected amount of overlap between successive windows in samples.
+%            Nfft is the selected number of DFT calculation points (Nfft>=N). 
+%            win_type is a string containing one of the windows shown
+%            below. The default value of this variable corresponds to the rectangular window.
+            
+            %Default parameters???
+            N    = 256;   % Selected window size.
+            M    = 220;   % Selected overlap between successive segments in samples.
+            Nfft = 512;   % Selected number of FFT points.
+
+            if isempty(obj.win_type_stft)
+                obj.win_type_stft = 'rectangular';
+            end
             switch obj.win_type_stft
-                
                 case  'cheby'
                     win = chebwin(N).';
                     
@@ -159,8 +180,7 @@ classdef FourierTransformer < handle
         
         function y = IFFT(obj,x)
             %Type of ift: matlab, FFT, Coley-Tukey, idft
-            type_ft = 'FFT'; %
-            switch type_ft
+            switch obj.type_ft
                 case 'matlab'
                     y = ifft(x);
                 case 'FFT'
@@ -169,6 +189,8 @@ classdef FourierTransformer < handle
                     y = obj.ifft_ct(x);
                 case 'idft'
                     y = obj.idft(x);
+                otherwise %Caso en el que este vacio o error?
+                    y = ifft(x);
             end
             
 %             %Cut the zero-padding
