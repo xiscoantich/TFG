@@ -16,6 +16,10 @@ classdef Data < handle
         S
         U
         V
+        
+        %New Wavelet Transformer
+        detail_w
+        N_w
     end
      
     properties (Access = private)
@@ -90,9 +94,19 @@ classdef Data < handle
                 
                 case 'TEMPORAL'
                     obj.name = cParams.name;
-                    obj.loadAudioSignal();
-                    obj.dim = size(obj.signal,2);
+                    switch cParams.typesignal
+                        case 'AUDIO'
+                            obj.loadAudioSignal();
+                            obj.dim = 1;
+                        case 'IMAGE'
+                            obj.loadImage();
+                            obj.dim = 2;
+                        case 'VIDEO'
+                            obj.loadVideo()
+                            obj.dim = 3;
+                    end
                     obj.type_ft = cParams.type_ft;
+                    obj.motherwave = cParams.motherwave;
                     obj.computeFourierRepresentation();
                     obj.computeWaveletRepresentation();
                     obj.computePCARepresentation()
@@ -103,7 +117,9 @@ classdef Data < handle
                     obj.type_ft = cParams.type_ft;
                     obj.computeTimeRepresentationFromFreq();
                     obj.wave = cParams.wave;
-                    obj.wave_info = cParams.wave_info; 
+                    obj.detail_w = cParams.detail_w; 
+                    obj.N_w = cParams.N_w;
+                    obj.motherwave = cParams.motherwave;
                     obj.computeTimeRepresentationFromWave(); 
                     obj.U = cParams.U;
                     obj.S = cParams.S;
@@ -141,8 +157,10 @@ classdef Data < handle
         end
 
         function  loadImage(obj)
-           A = imread(obj.name);
-           obj.signal=rgb2gray(A);
+            path0=fileparts(which(mfilename));
+            imagepath=[path0 '\Images\' obj.name '.jpg'];
+            A = imread(imagepath);
+            obj.signal=double(rgb2gray(A));
         end
         
         function loadAudioSignal(obj)
@@ -167,9 +185,10 @@ classdef Data < handle
         
         function computeWaveletRepresentation(obj)
             s.data = obj;
-            wt = WaveletTransformer();
+            wt = NewWaveletTransformer();
             [obj.wave] = wt.directTransform(s);
-            obj.wave_info = wt;
+            obj.detail_w = wt.d;
+            obj.N_w = wt.N;
         end
         
         function computePCARepresentation(obj)
@@ -190,7 +209,7 @@ classdef Data < handle
         
         function computeTimeRepresentationFromWave(obj)
             s.data = obj;
-            wt = WaveletTransformer();
+            wt = NewWaveletTransformer();
             iwt = wt.inverseTransform(s);
             obj.rec_w = iwt;
         end

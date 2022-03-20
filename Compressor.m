@@ -25,7 +25,7 @@ classdef Compressor < handle
         end
 
         function cData = computeCompressedSignal(obj)
-            freq = obj.data.freq;             
+            freq = obj.data.freq;
             freqCut = obj.cutFrequency(freq);
             s.type_ft = obj.data.type_ft;
             
@@ -41,7 +41,10 @@ classdef Compressor < handle
             s.type = 'FREQUENCY';
             s.freq = freqCut;
             s.wave = wCut;
-            s.wave_info = obj.data.wave_info;
+            s.detail_w = obj.data.detail_w;
+            s.motherwave = obj.data.motherwave;
+            s.N_w = obj.data.N_w;
+            
             s.U = Ucut;
             s.S = Scut;
             s.V = Vcut;
