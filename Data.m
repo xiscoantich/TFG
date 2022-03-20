@@ -13,13 +13,13 @@ classdef Data < handle
         dt
         wave_info
         type_ft
+        type_wt
         S
         U
         V
         
         %New Wavelet Transformer
-        detail_w
-        N_w
+        level
     end
      
     properties (Access = private)
@@ -32,22 +32,10 @@ classdef Data < handle
             obj.init(cParams);
         end
 
-        function plotSignal(obj)
-           plot(obj.signal,'DisplayName','Signal')
-           hold on;
+        function plotSignal(obj,name)
+           str = string(name);
+           plot(obj.signal,'DisplayName',str)
            title('Signal');
-           if(isempty(obj.rec_f) == false)
-               plot(obj.rec_f,'DisplayName','Rec Fourier');
-               hold on;
-           end
-           if(isempty(obj.rec_w) == false)
-               plot(obj.rec_w,'DisplayName','Rec Wavelets');
-               hold on;
-           end
-           if(isempty(obj.rec_pca) == false)
-               plot(obj.rec_pca,'DisplayName','Rec PCA');
-               hold on;
-           end
            legend('show');
         end
     
@@ -106,25 +94,34 @@ classdef Data < handle
                             obj.dim = 3;
                     end
                     obj.type_ft = cParams.type_ft;
+                    obj.type_wt = cParams.type_wt;
                     obj.motherwave = cParams.motherwave;
                     obj.computeFourierRepresentation();
                     obj.computeWaveletRepresentation();
                     obj.computePCARepresentation()
                     
-                case 'FREQUENCY'
-                    obj.freq = cParams.freq;
-                    obj.dim = size(obj.freq,2);
-                    obj.type_ft = cParams.type_ft;
-                    obj.computeTimeRepresentationFromFreq();
-                    obj.wave = cParams.wave;
-                    obj.detail_w = cParams.detail_w; 
-                    obj.N_w = cParams.N_w;
-                    obj.motherwave = cParams.motherwave;
-                    obj.computeTimeRepresentationFromWave(); 
-                    obj.U = cParams.U;
-                    obj.S = cParams.S;
-                    obj.V = cParams.V;
-                    obj.computeTimeRepresentationFromPCA()
+                case 'FOURIER'
+                        obj.freq = cParams.freq;
+                        obj.dim = cParams.dim;
+                        obj.type_ft = cParams.type_ft;
+                        obj.computeTimeRepresentationFromFreq();
+                  
+                case 'WAVELET'
+                        obj.wave = cParams.wave;
+                        obj.dim = cParams.dim;
+                        obj.type_wt = cParams.type_wt;
+                        obj.wave_info = cParams.wave_info;
+                        obj.motherwave = cParams.motherwave;
+                        obj.computeTimeRepresentationFromWave();
+             
+                case 'PCA'
+                        obj.dim = cParams.dim;
+                        obj.U = cParams.U;
+                        obj.S = cParams.S;
+                        obj.V = cParams.V;
+                        obj.computeTimeRepresentationFromPCA()
+                    
+                    
                     %Aqui estoy reescribiendo la reconstruccion de la señal
                     %Esto se deberia separar de en dos casos diferentes.
                     %El caso en el que reescribo a partir de la frecuencia
@@ -185,10 +182,14 @@ classdef Data < handle
         
         function computeWaveletRepresentation(obj)
             s.data = obj;
-            wt = NewWaveletTransformer();
+            wt = WaveletTransformer();
             [obj.wave] = wt.directTransform(s);
-            obj.detail_w = wt.d;
-            obj.N_w = wt.N;
+            obj.wave_info.d = wt.d;
+            obj.wave_info.N = wt.N;
+            obj.wave_info.scale = wt.scale;
+            obj.wave_info.paramout = wt.paramout;
+            obj.wave_info.k = wt.k;
+            obj.type_wt = wt.type_wt;
         end
         
         function computePCARepresentation(obj)
@@ -201,7 +202,7 @@ classdef Data < handle
             s.data = obj;
             ft = FourierTransformer();
             ift = ft.inverseTransform(s);
-            obj.rec_f = ift;
+            obj.signal = ift;
             %Aqui tengo que hacer para que tambien tenga la informacion de
             %que tipo de fft quiere hacer que deberia ser igual que la
             %anterior
@@ -209,16 +210,16 @@ classdef Data < handle
         
         function computeTimeRepresentationFromWave(obj)
             s.data = obj;
-            wt = NewWaveletTransformer();
+            wt = WaveletTransformer();
             iwt = wt.inverseTransform(s);
-            obj.rec_w = iwt;
+            obj.signal = iwt;
         end
         
         function computeTimeRepresentationFromPCA(obj)
             s.data = obj;
             pca = PCATransformer();
             ipca = pca.inverseTransform(s);
-            obj.rec_pca = ipca;
+            obj.signal = ipca;
         end
     end
 end

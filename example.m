@@ -6,7 +6,7 @@ d.typesignal = 'AUDIO';
 d.name = 'train';
 d.motherwave = 'CDF_9x7';
 d.type_ft = 'matlab';
-
+d.type_wt = 'lifting';
 a = Data(d);
 
 e.keep = 0.15;
@@ -19,8 +19,10 @@ switch d.typesignal
     case 'AUDIO'
         figure()
         hold on
-        a.plotSignal();
-        aCompressed.plotSignal()
+        a.plotSignal('Original');
+        aCompressed.Fourier.plotSignal('Fourier')
+        aCompressed.Wavelet.plotSignal('Wavelet')
+        aCompressed.PCA.plotSignal('PCA')
         
         figure()
         hold on
@@ -64,8 +66,6 @@ switch d.typesignal
         colormap;
         %colorbar %Los valores de la leyenda estan escalados entre 0 i 1
         title(['Wavelets:',num2str(e.keep*100),'%'],'FontSize',10);
-       
-
 end
 
 

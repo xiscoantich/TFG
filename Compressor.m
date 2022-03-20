@@ -5,14 +5,6 @@ classdef Compressor < handle
     end
     
     properties (Access = private)
-        frequencyCut
-        waveCut
-        Ucut
-        Scut
-        Vcut
-    end
-    
-    properties (Access = private)
        keep
        signal
        data
@@ -27,10 +19,11 @@ classdef Compressor < handle
         function cData = computeCompressedSignal(obj)
             freq = obj.data.freq;
             freqCut = obj.cutFrequency(freq);
-            s.type_ft = obj.data.type_ft;
+            fourier.type_ft = obj.data.type_ft;
             
             wave = obj.data.wave;
             wCut = obj.cutWave(wave);
+            wavelet.type_wt = obj.data.type_wt;
             
             U = obj.data.U;
             S = obj.data.S;
@@ -38,18 +31,25 @@ classdef Compressor < handle
             
             [Ucut,Scut,Vcut] = obj.cutPCA(U,S,V);
             
-            s.type = 'FREQUENCY';
-            s.freq = freqCut;
-            s.wave = wCut;
-            s.detail_w = obj.data.detail_w;
-            s.motherwave = obj.data.motherwave;
-            s.N_w = obj.data.N_w;
+            fourier.type = 'FOURIER';
+            wavelet.type = 'WAVELET';
+            pca.type = 'PCA';
             
-            s.U = Ucut;
-            s.S = Scut;
-            s.V = Vcut;
+            fourier.dim = obj.data.dim;
+            wavelet.dim = obj.data.dim;
+            pca.dim = obj.data.dim;
             
-            cData = Data(s);
+            fourier.freq = freqCut;
+            wavelet.wave = wCut;
+            wavelet.motherwave = obj.data.motherwave;
+            wavelet.wave_info = obj.data.wave_info;
+            
+            pca.U = Ucut;
+            pca.S = Scut;
+            pca.V = Vcut;
+                
+            s = struct('Fourier',Data(fourier),'Wavelet',Data(wavelet),'PCA',Data(pca));
+            cData = s;
         end
     end
     
@@ -69,7 +69,6 @@ classdef Compressor < handle
                 ind    = abs(freq)>thresh;   
                 fCut = freq.*ind;           
             end 
-            obj.frequencyCut = fCut;
         end
         
         function  wCut = cutWave(obj,wave)
@@ -81,21 +80,19 @@ classdef Compressor < handle
                 ind    = abs(wave)>thresh;   
                 wCut = wave.*ind;           
             end 
-            obj.waveCut = wCut;
         end
         
         function [Ucut,Scut,Vcut] = cutPCA(obj,U,S,V)  
             nx = size(U,1);
             ny = size(V,2);
+            
+            %Aqui el cut todavia no esta bien 
             %r = round((nx*ny)*(obj.keep/3));
             %r = round(length(S)*(obj.keep/3));
             r = 1;
             Ucut = U(:,1:r);
             Scut = S(1:r,1:r);
             Vcut = V(:,1:r);
-            obj.Ucut = Ucut;
-            obj.Scut = Scut;
-            obj.Vcut = Vcut;
         end
         
     end
