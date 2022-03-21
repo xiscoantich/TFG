@@ -7,6 +7,7 @@ classdef WaveletTransformer < handle
         scale
         paramout
         k
+        l
     end
 
     methods (Access = public)
@@ -200,9 +201,13 @@ classdef WaveletTransformer < handle
         function [c,l] = mlwavelet(obj,Y,n,wavelet)
             %load the wavelet here
             if ischar(wavelet)
-                wvf = obj.load_wavelet(wavelet);
+                wvf = obj.load_wavelet(wavelet,'E');
             else
                 wvf = wavelet;
+            end
+            
+            if isempty(n) %Si esta vacio que level tenemos que utilizar?? Podriamos utilizar el maximo utilizando las lineas de codigo de justo abajo
+                n=1;
             end
             
             Y=double(Y);

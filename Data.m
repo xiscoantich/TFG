@@ -191,6 +191,7 @@ classdef Data < handle
             obj.wave_info.scale = wt.scale;
             obj.wave_info.paramout = wt.paramout;
             obj.wave_info.k = wt.k;
+            obj.wave_info.l = wt.l;
             obj.type_wt = wt.type_wt;
         end
         

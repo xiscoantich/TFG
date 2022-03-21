@@ -5,8 +5,8 @@ d.type = 'TEMPORAL';
 d.typesignal = 'AUDIO';
 d.name = 'train';
 d.motherwave = 'Haar';
-d.type_ft = 'matrix';
-d.type_wt = 'convolution';
+d.type_ft = 'matlab';
+d.type_wt = 'multilevel';
 a = Data(d);
 
 e.keep = 0.15;

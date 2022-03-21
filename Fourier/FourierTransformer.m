@@ -38,7 +38,7 @@ classdef FourierTransformer < handle
                     freq = fft(signal);
                 case 'matrix'
                     freq = obj.fft_matrix(signal);
-                case 'dft'
+                case 'dft' %Creo que la dft no funciona muy bien :(
                     freq = obj.dft(signal);
                 case 'stft'
                     freq = obj.stft(signal);
@@ -247,7 +247,7 @@ classdef FourierTransformer < handle
                 for x = 0:N-1
                     int(x+1) = Wm^(x*k)*X(x+1);
                 end
-                y(k+1) = sum(int);
+                y(k+1) = real(sum(int));
             end
         end
         
