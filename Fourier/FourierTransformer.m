@@ -137,14 +137,14 @@ classdef FourierTransformer < handle
                     win = ones(1,N);
             end
             
-            %% Input Signal Segmentation Params.
+            % Input Signal Segmentation Params.
             x = x(:).';
             L = length(x);
             
             % Number of segments (frames) the signal is divided to.
             K = floor((L-M)/(N-M));
             
-            %% Number of Unique FFT Points.
+            % Number of Unique FFT Points.
             NUPs = Nfft;
             if isreal(x)
                 if mod(Nfft,2)   % if N is odd.
@@ -154,7 +154,7 @@ classdef FourierTransformer < handle
                 end
             end
             
-            %% STFT Calculation
+            % STFT Calculation
             X = zeros(N,K);
             S = zeros(Nfft,K);
             
@@ -164,6 +164,8 @@ classdef FourierTransformer < handle
             end
             
             S = S(1:NUPs,:);
+            
+            obj.plotSpectogram(S,L,N,M);
         end
         
         function y = FFT2 (obj,x)
@@ -176,8 +178,7 @@ classdef FourierTransformer < handle
                 y(i,:)=obj.FFT(x1(i,:)); %FFT por filas
             end
         end
-        
-        
+            
         function y = IFFT(obj,x)
             %Type of ift: matlab, FFT, Coley-Tukey, idft
             switch obj.type_ft
@@ -261,5 +262,25 @@ classdef FourierTransformer < handle
             end
         end
         
+    end
+    
+    methods (Access = private, Static)
+        function plotSpectogram(S,L,N,M)
+            h = figure('Name','Spectogram');
+            colormap('jet');
+            
+            %[T,F] = meshgrid(t,f/1000); % f in KHz. No tenemos FS
+            surface(10*log10(abs(S.^2) + eps),'EdgeColor','none');
+            
+            axis tight;
+            grid on;
+            title(['Signal Length: ',num2str(L),', Window Length: ', num2str(N),', Overlap: ', num2str(M), ' samples.']);
+            xlabel('Time (sec)');
+            ylabel('Frequency'); %Esto deberia ser KHz...
+            colorbar('Limits',[-80, 40]);
+            cbar_handle = findobj(h,'tag','Colorbar');
+            set(get(cbar_handle,'YLabel'),'String','(dB)','Rotation',0);
+            %zlim([-80 40]);
+        end
     end
 end

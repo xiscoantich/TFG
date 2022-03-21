@@ -17,6 +17,7 @@ classdef Data < handle
         S
         U
         V
+        Fs
         
         %New Wavelet Transformer
         level
@@ -166,6 +167,7 @@ classdef Data < handle
                     load(obj.name,'Fs','y');
                     obj.signal = y;
                     obj.dt = 1/Fs;
+                    obj.Fs = Fs;
                 case {'sinus'}
                     obj.dt = 0.01;
                     t = 0:obj.dt:1;

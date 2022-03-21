@@ -4,9 +4,9 @@ addpath(genpath(folder));
 d.type = 'TEMPORAL';
 d.typesignal = 'AUDIO';
 d.name = 'train';
-d.motherwave = 'CDF_9x7';
-d.type_ft = 'matlab';
-d.type_wt = 'lifting';
+d.motherwave = 'Haar';
+d.type_ft = 'matrix';
+d.type_wt = 'convolution';
 a = Data(d);
 
 e.keep = 0.15;
@@ -27,7 +27,7 @@ switch d.typesignal
         figure()
         hold on
         a.plotFrequency();
-        aCompressed.plotFrequency()
+        aCompressed.Fourier.plotFrequency()
         
         figure()
         hold on
@@ -35,14 +35,14 @@ switch d.typesignal
         title('Wavelet')
         
         figure ()
-        aCompressed.plotWave()
+        aCompressed.WaveletplotWave()
         title('Compressed Wavelet')
         
         figure()
         a.plotSurfWave()
         
         figure()
-        aCompressed.plotSurfWave()
+        aCompressed.Wavelet.plotSurfWave()
         
         figure()
         a.plotPCAInfo()
