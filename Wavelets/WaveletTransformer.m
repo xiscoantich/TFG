@@ -85,7 +85,7 @@ classdef WaveletTransformer < handle
             end
         end
         
-        function signal = obj.iwt2d(obj,data)
+        function signal = iwt2d(obj,data)
             switch obj.type_wt
                 case 'cwt'
                     signal = obj.invcwt2(data.wave, data.motherwave, obj.scale, obj.paramout, obj.k);

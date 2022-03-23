@@ -86,13 +86,14 @@ classdef Compressor < handle
             nx = size(U,1);
             ny = size(V,2);
             
+            
             %Aqui el cut todavia no esta bien 
             %r = round((nx*ny)*(obj.keep/3));
             %r = round(length(S)*(obj.keep/3));
-            r = 1;
-            Ucut = U(:,1:r);
-            Scut = S(1:r,1:r);
-            Vcut = V(:,1:r);
+            
+            Ucut = U(:,1:ceil(nx*obj.keep));
+            Scut = S(1:ceil(nx*obj.keep),1:ceil(ny*obj.keep));
+            Vcut = V(:,1:ceil(ny*obj.keep));
         end
         
     end

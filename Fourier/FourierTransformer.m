@@ -169,13 +169,18 @@ classdef FourierTransformer < handle
         end
         
         function y = FFT2 (obj,x)
-            m=size(x,2); %columnas
-            for i=1:m
-                x1(:,i)=obj.FFT(x(:,i)); %FFT por columnas
-            end
-            n=size(x1,1); %filas
-            for i=1:n
-                y(i,:)=obj.FFT(x1(i,:)); %FFT por filas
+            switch obj.type_ft
+                case 'matlab'
+                    y=fft2(x);
+                case 'matrix'
+                    m=size(x,2); %columnas
+                    for i=1:m
+                        x1(:,i)=obj.FFT(x(:,i)); %FFT por columnas
+                    end
+                    n=size(x1,1); %filas
+                    for i=1:n
+                        y(i,:)=obj.FFT(x1(i,:)); %FFT por filas
+                    end
             end
         end
             
