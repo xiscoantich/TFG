@@ -7,9 +7,10 @@ d.name = 'cat';
 d.motherwave = 'Haar';
 d.type_ft = 'matlab';
 d.type_wt = 'dwt';
+d.level=2;
 a = Data(d);
 
-e.keep = 0.2;
+e.keep = 0.10;
 e.data = a;
 c = Compressor(e);
 aCompressed = c.computeCompressedSignal();
@@ -22,7 +23,6 @@ switch d.typesignal
         a.plotSignal('Original');
         aCompressed.Fourier.plotSignal('Fourier')
         aCompressed.Wavelet.plotSignal('Wavelet')
-        aCompressed.PCA.plotSignal('PCA')
         
         figure()
         hold on
@@ -35,7 +35,7 @@ switch d.typesignal
         title('Wavelet')
         
         figure ()
-        aCompressed.WaveletplotWave()
+        aCompressed.Wavelet.plotWave()
         title('Compressed Wavelet')
         
         figure()
@@ -43,9 +43,6 @@ switch d.typesignal
         
         figure()
         aCompressed.Wavelet.plotSurfWave()
-        
-        figure()
-        a.plotPCAInfo()
         
     case 'IMAGE' 
         

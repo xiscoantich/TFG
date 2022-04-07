@@ -13,42 +13,37 @@ classdef Compressor < handle
     methods (Access = public)
         
         function obj = Compressor(cParams)
-            obj.init(cParams)            
+            obj.init(cParams)
         end
-
+        
         function cData = computeCompressedSignal(obj)
             freq = obj.data.freq;
             freqCut = obj.cutFrequency(freq);
             fourier.type_ft = obj.data.type_ft;
-            
             wave = obj.data.wave;
             wCut = obj.cutWave(wave);
             wavelet.type_wt = obj.data.type_wt;
-            
-            U = obj.data.U;
-            S = obj.data.S;
-            V = obj.data.V;
-            
-            [Ucut,Scut,Vcut] = obj.cutPCA(U,S,V);
-            
             fourier.type = 'FOURIER';
             wavelet.type = 'WAVELET';
-            pca.type = 'PCA';
-            
             fourier.dim = obj.data.dim;
             wavelet.dim = obj.data.dim;
-            pca.dim = obj.data.dim;
-            
             fourier.freq = freqCut;
             wavelet.wave = wCut;
             wavelet.motherwave = obj.data.motherwave;
             wavelet.wave_info = obj.data.wave_info;
-            
-            pca.U = Ucut;
-            pca.S = Scut;
-            pca.V = Vcut;
-                
-            s = struct('Fourier',Data(fourier),'Wavelet',Data(wavelet),'PCA',Data(pca));
+            s = struct('Fourier',Data(fourier),'Wavelet',Data(wavelet));
+            if obj.data.dim > 1
+                U = obj.data.U;
+                S = obj.data.S;
+                V = obj.data.V;
+                [Ucut,Scut,Vcut] = obj.cutPCA(U,S,V);
+                pca.type = 'PCA';
+                pca.dim = obj.data.dim;
+                pca.U = Ucut;
+                pca.S = Scut;
+                pca.V = Vcut;
+                s = struct('Fourier',Data(fourier),'Wavelet',Data(wavelet),'PCA',Data(pca));
+            end
             cData = s;
         end
     end
@@ -66,9 +61,9 @@ classdef Compressor < handle
             else
                 freqSort = sort(abs(freq(:)));
                 thresh = freqSort(floor((1-obj.keep)*length(freqSort)));
-                ind    = abs(freq)>thresh;   
-                fCut = freq.*ind;           
-            end 
+                ind    = abs(freq)>thresh;
+                fCut = freq.*ind;
+            end
         end
         
         function  wCut = cutWave(obj,wave)
@@ -77,17 +72,17 @@ classdef Compressor < handle
             else
                 waveSort = sort(abs(wave(:)));
                 thresh = waveSort(floor((1-obj.keep)*length(waveSort)));
-                ind    = abs(wave)>thresh;   
-                wCut = wave.*ind;           
-            end 
+                ind    = abs(wave)>thresh;
+                wCut = wave.*ind;
+            end
         end
         
-        function [Ucut,Scut,Vcut] = cutPCA(obj,U,S,V)  
+        function [Ucut,Scut,Vcut] = cutPCA(obj,U,S,V)
             nx = size(U,1);
             ny = size(V,2);
             
             
-            %Aqui el cut todavia no esta bien 
+            %Aqui el cut todavia no esta bien
             %r = round((nx*ny)*(obj.keep/3));
             %r = round(length(S)*(obj.keep/3));
             
@@ -95,7 +90,5 @@ classdef Compressor < handle
             Scut = S(1:ceil(nx*obj.keep),1:ceil(ny*obj.keep));
             Vcut = V(:,1:ceil(ny*obj.keep));
         end
-        
     end
-    
 end

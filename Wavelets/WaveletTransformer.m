@@ -2,7 +2,6 @@ classdef WaveletTransformer < handle
 
     properties (Access = public)
         type_wt
-        d
         N
         scale
         paramout
@@ -25,7 +24,6 @@ classdef WaveletTransformer < handle
         function signal = inverseTransform(obj,cParams)
             data = cParams.data;
             obj.type_wt = data.type_wt;
-            obj.d = data.wave_info.d;
             obj.N = data.wave_info.N;
             obj.scale = data.wave_info.scale;
             obj.paramout = data.wave_info.paramout;
@@ -47,10 +45,10 @@ classdef WaveletTransformer < handle
                     [wave,~,obj.scale,~,~,obj.paramout, obj.k] = obj.contwt(data.signal,data.dt,[],[],[],[],data.motherwave,[]);
                     obj.plotSpectogram(wave)
                 case 'convolution'
-                    [wave,obj.d] = obj.dwt_conv1D(data.signal,data.motherwave);
+                    [wave(:,1),wave(:,2)] = obj.dwt_conv1D(data.signal,data.motherwave);
                 case 'lifting'
-                    [wave,obj.d] = obj.dwt_lifting1D(data.signal,data.motherwave);
-                case 'dyadic_decomp'
+                    [wave(:,1),wave(:,2)] = obj.dwt_lifting1D(data.signal,data.motherwave);
+                case 'dyadic_decomp' %Esta no se si la deberia eliminar
                     [wave,obj.N] = obj.dwt_dyadic_decomp(data.signal,data.motherwave,obj.N);
                 case 'multilevel'
                     [wave,obj.l] = obj.mlwavelet(data.signal,data.level,data.motherwave);
@@ -60,13 +58,15 @@ classdef WaveletTransformer < handle
         function wave = wt2d(obj,data)
             switch obj.type_wt
                 case 'cwt'
-                    [wave,~,obj.scale,~,~, obj.paramout, obj.k] = obj.contwt2(data.signal,data.dt,[],[],[],[],data.mother,[]);
+                    [wave,~,obj.scale,~,~, obj.paramout, obj.k] = obj.contwt2(data.signal,data.dt,[],[],[],[],data.motherwave,[]);
                 case 'dwt'
-                    [A,H,V,D] = dwt_2D(data.signal,data.motherwave);
+                    [A,H,V,D] = obj.dwt_2D(data.signal,data.motherwave);
                     wave(:,:,1) = A;
                     wave(:,:,2) = H;
                     wave(:,:,3) = V;
                     wave(:,:,4) = D;
+                case 'multilevel'
+                    [wave,obj.l] = obj.mlwavelet2(data.signal,data.level,data.motherwave);
             end
         end
         
@@ -95,6 +95,8 @@ classdef WaveletTransformer < handle
                     V = data.wave(:,:,3);
                     D = data.wave(:,:,4);
                     signal = obj.idwt_2D(A,H,V,D,data.motherwave);
+                case 'multilevel'
+                    signal = waverec2(data.wave,data.wave_info.l,data.motherwave); %Esta funcion es de matlab
             end
         end
         
@@ -218,19 +220,7 @@ classdef WaveletTransformer < handle
                 %at the moment, only powers of two supported
                 error('Illegal number of decompositions for a given matrix!');
             end
-            
-            % l = zeros(1,n+1);
-            % c = zeros(1,length(Y));
-            %
-            % for i = 1:1:n
-            %     [a,d] = dwt_lifting1D(Y,wvf);
-            %     l(end+1-i)=length(d);
-            %     c(1:length(a)+length(d)) = [a,d];
-            %     Y=a;
-            % end
-            % l(1) = length(a);
-            
-            
+             
             % Initialization.
             s = size(Y);
             Y = Y(:).'; % row vector
@@ -240,7 +230,7 @@ classdef WaveletTransformer < handle
             l(end) = length(Y);
             for k = 1:n
                 [Y,d] = obj.dwt_lifting1D(Y,wvf); % decomposition
-                c     = [d c];            %#ok<AGROW> % store detail
+                c     = [d c];            % store detail
                 l(n+2-k) = length(d);     % store length
             end
             
@@ -254,6 +244,40 @@ classdef WaveletTransformer < handle
             end
         end
         
+        function [c,s] = mlwavelet2(obj,x,n,wavelet)
+            
+            %load the wavelet here
+            if ischar(wavelet)
+                wvf = obj.load_wavelet(wavelet,'E');
+            else
+                wvf = wavelet;
+            end
+            
+            if isempty(n) %Si esta vacio que level tenemos que utilizar?? Podriamos utilizar el maximo utilizando las lineas de codigo de justo abajo
+                n=1;
+            end
+            
+            % Initialization.
+            c = [];
+            sx =  size(x);
+            s = zeros(n+2,length(sx));
+            if isempty(x)
+                c = cast(c,"like",x);
+                return;
+            end
+            
+            s(end,:) = size(x);
+            for i=1:n
+                [x,h,v,d] = obj.dwt_2D(x,wvf); % decomposition
+                c = [h(:)' v(:)' d(:)' c];     % store details
+                s(n+2-i,:) = size(x);          % store size
+            end
+            
+            % Last approximation.
+            c = [x(:)' c];
+            s(1,:) = size(x);
+        end
+
         function [a,d] = dwt_conv1D(obj,x,wvf)
             if ischar(wvf)
                 wvf = obj.load_wavelet(wvf,'E');
@@ -726,7 +750,7 @@ classdef WaveletTransformer < handle
             end
             %normalisation
             a = xe(2:2:end-1) * K(1);
-            d = xe(3:2:end-1) * K(2);
+            d = -xe(3:2:end-1) * K(2);
         end
         
         function Xr = idwt_dyadic_recon(obj,Y,wavelet,N)

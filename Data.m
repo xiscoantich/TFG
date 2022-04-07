@@ -96,6 +96,7 @@ classdef Data < handle
                     end
                     obj.type_ft = cParams.type_ft;
                     obj.type_wt = cParams.type_wt;
+                    obj.level = cParams.level;
                     obj.motherwave = cParams.motherwave;
                     obj.computeFourierRepresentation();
                     obj.computeWaveletRepresentation();
@@ -169,11 +170,19 @@ classdef Data < handle
                     obj.dt = 1/Fs;
                     obj.Fs = Fs;
                 case {'sinus'}
-                    obj.dt = 0.01;
-                    t = 0:obj.dt:1;
+                    obj.dt = 0.05;
+                    t = 0:obj.dt:1-obj.dt;
                     w = 15;
                     obj.signal(:,1) = sin(w*t);
+                
             end
+            %Check if signal is a column vector.
+            IsColumn = iscolumn(obj.signal);
+            if IsColumn == 0 %False
+                obj.signal = obj.signal.';
+            end
+
+            
         end
 
         function computeFourierRepresentation(obj)
@@ -186,7 +195,6 @@ classdef Data < handle
             s.data = obj;
             wt = WaveletTransformer();
             [obj.wave] = wt.directTransform(s);
-            obj.wave_info.d = wt.d;
             obj.wave_info.N = wt.N;
             obj.wave_info.scale = wt.scale;
             obj.wave_info.paramout = wt.paramout;
