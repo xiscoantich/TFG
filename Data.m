@@ -157,7 +157,7 @@ classdef Data < handle
 
         function  loadImage(obj)
             path0=fileparts(which(mfilename));
-            imagepath=[path0 '\Images\' obj.name '.jpg'];
+            imagepath=fullfile(path0,'Images',[obj.name,'.jpg']);
             A = imread(imagepath);
             obj.signal=double(rgb2gray(A));
         end
