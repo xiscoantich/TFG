@@ -6,11 +6,27 @@ d.typesignal = 'IMAGE';
 d.name = 'cat';
 d.motherwave = 'Haar';
 d.type_ft = 'matlab';
-d.type_wt = 'dwt';
-d.level=2;
+d.type_wt = 'packet';
+d.level=5;
+d.par=struct('N',d.level,'pdep',1,'wvf',load_wavelet('CDF_9x7'),'dec','greedy');
+d.ent_par=struct('ent','shannon','opt',0);
+
 a = Data(d);
 
-e.keep = 0.10;
+% e.type = 'TEMPORAL';
+% e.typesignal = 'IMAGE';
+% e.name = 'cat';
+% e.motherwave = 'Haar';
+% e.type_ft = 'matlab';
+% e.type_wt = 'matlab';
+% e.level=1;
+% b = Data(e);
+% 
+% error = b.wave-a.wave;
+% figure
+% plot(error)
+
+e.keep = 0.01;
 e.data = a;
 c = Compressor(e);
 aCompressed = c.computeCompressedSignal();
@@ -85,11 +101,12 @@ switch d.typesignal
         title(['Fourier coefficients:',num2str(e.keep*100),'%'],'FontSize',10);
         
         nexttile;
-        Coef_wt=[aCompressed.Wavelet.wave(:,:,1),aCompressed.Wavelet.wave(:,:,2);
-                 aCompressed.Wavelet.wave(:,:,3),aCompressed.Wavelet.wave(:,:,4)];
-        img=mat2gray(Coef_wt);
-        imshow(img);
-        title(['Wavelets coefficients:',num2str(e.keep*100),'%'],'FontSize',10);
+        plotWaveCoef2(a)
+%         Coef_wt=[aCompressed.Wavelet.wave(:,:,1),aCompressed.Wavelet.wave(:,:,2);
+%                  aCompressed.Wavelet.wave(:,:,3),aCompressed.Wavelet.wave(:,:,4)];      
+%         img=mat2gray(Coef_wt);
+%         imshow(img);
+%         title(['Wavelets coefficients:',num2str(e.keep*100),'%'],'FontSize',10);
                
 end
 
@@ -100,3 +117,4 @@ end
 % Esto tengo que crear un nuevo struct (clase) para cada uno de los metodos de
 % compresion donde se guarde su recuperacion. No guardarlos todos en la
 % misma clase. (Pasar de guardar en rec_f a signal)
+

@@ -7,6 +7,10 @@ classdef WaveletTransformer < handle
         paramout
         k
         l
+        
+        %packet
+        packet_stream
+        s
     end
 
     methods (Access = public)
@@ -52,6 +56,8 @@ classdef WaveletTransformer < handle
                     [wave,obj.N] = obj.dwt_dyadic_decomp(data.signal,data.motherwave,obj.N);
                 case 'multilevel'
                     [wave,obj.l] = obj.mlwavelet(data.signal,data.level,data.motherwave);
+                case 'matlab'
+                    [wave,obj.l] = wavedec(data.signal,data.level,data.motherwave);
             end
         end
         
@@ -66,7 +72,12 @@ classdef WaveletTransformer < handle
                     wave(:,:,3) = V;
                     wave(:,:,4) = D;
                 case 'multilevel'
-                    [wave,obj.l] = obj.mlwavelet2(data.signal,data.level,data.motherwave);
+                    [wave,obj.l] = obj.mlwavelet2(data.signal,data.level,data.motherwave); %Deberia guardar los datos de otra manera 
+                case 'matlab'
+                    [wave,obj.l] = wavedec2(data.signal,data.level,data.motherwave);
+                case 'packet'
+                    [wave,obj.packet_stream,obj.s,E]=decomp_packets2D(data.signal,data.par,data.ent_par);
+                    draw_packets(wave,data.par.N,data.par.pdep,obj.s,obj.packet_stream);
             end
         end
         
@@ -82,6 +93,8 @@ classdef WaveletTransformer < handle
                     signal = obj.idwt_dyadic_recon(data.wave,data.motherwave,data.wave_info.N);
                 case 'multilevel'
                     signal = waverec(data.wave,data.wave_info.l,data.motherwave); %Esta funcion es de matlab
+                case 'matlab'
+                    signal = waverec(data.wave,data.wave_info.l,data.motherwave);
             end
         end
         
@@ -96,7 +109,11 @@ classdef WaveletTransformer < handle
                     D = data.wave(:,:,4);
                     signal = obj.idwt_2D(A,H,V,D,data.motherwave);
                 case 'multilevel'
-                    signal = waverec2(data.wave,data.wave_info.l,data.motherwave); %Esta funcion es de matlab
+                    signal = waverec2(data.wave,data.wave_info.l,data.motherwave); %Esta funcion es de matlab y no funciona bien
+                case 'matlab'
+                    signal = waverec2(data.wave,data.wave_info.l,data.motherwave);
+                case 'packet'
+                    signal = recon_packets2D(data.wave,data.wave_info.par,data.wave_info.packet_stream);
             end
         end
         
@@ -208,8 +225,8 @@ classdef WaveletTransformer < handle
                 wvf = wavelet;
             end
             
-            if isempty(n) %Si esta vacio que level tenemos que utilizar?? Podriamos utilizar el maximo utilizando las lineas de codigo de justo abajo
-                n=1;
+            if isempty(n) 
+                n = wmaxlev(length(Y),wavelet);
             end
             
             Y=double(Y);
@@ -253,10 +270,9 @@ classdef WaveletTransformer < handle
                 wvf = wavelet;
             end
             
-            if isempty(n) %Si esta vacio que level tenemos que utilizar?? Podriamos utilizar el maximo utilizando las lineas de codigo de justo abajo
-                n=1;
+            if isempty(n)
+               n = wmaxlev(length(x),wavelet);
             end
-            
             % Initialization.
             c = [];
             sx =  size(x);
@@ -267,7 +283,7 @@ classdef WaveletTransformer < handle
             end
             
             s(end,:) = size(x);
-            for i=1:n
+            for i=1:n  
                 [x,h,v,d] = obj.dwt_2D(x,wvf); % decomposition
                 c = [h(:)' v(:)' d(:)' c];     % store details
                 s(n+2-i,:) = size(x);          % store size
@@ -693,7 +709,6 @@ classdef WaveletTransformer < handle
                 X = reshape(X,sizdim,sizcol); %reshape into 2D sizdim x sizcol matrix
                 lpasiz = obj.subband_dim(sizdim, 1);
                 for j=1:sizcol
-                    
                     [X(1:lpasiz,j),X(lpasiz+1:sizdim,j)] = obj.dwt_lifting1D(X(:,j),wvf);
                 end
                 X = reshape(X,sv);
@@ -923,12 +938,12 @@ classdef WaveletTransformer < handle
             else
                 wvf = wavelet;
             end
-            
+    
             X = obj.dwt_dim(X,1,wvf); %columns
             X = obj.dwt_dim(X,2,wvf); %rows
             
             A = obj.subband(X,1,'ll');
-            H = obj.subband(X,1,'hl');
+            H = obj.subband(X,1,'hl');    
             V = obj.subband(X,1,'lh');
             D = obj.subband(X,1,'hh');
         end

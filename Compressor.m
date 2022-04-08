@@ -25,12 +25,15 @@ classdef Compressor < handle
             wavelet.type_wt = obj.data.type_wt;
             fourier.type = 'FOURIER';
             wavelet.type = 'WAVELET';
+            wavelet.level = obj.data.level;
             fourier.dim = obj.data.dim;
             wavelet.dim = obj.data.dim;
             fourier.freq = freqCut;
             wavelet.wave = wCut;
             wavelet.motherwave = obj.data.motherwave;
             wavelet.wave_info = obj.data.wave_info;
+            wavelet.par = obj.data.par;
+            wavelet.ent_par = obj.data.ent_par;
             s = struct('Fourier',Data(fourier),'Wavelet',Data(wavelet));
             if obj.data.dim > 1
                 U = obj.data.U;
