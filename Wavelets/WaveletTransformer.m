@@ -403,7 +403,7 @@ classdef WaveletTransformer < handle
             
             %sets the path where the wavelets are stored
             path0=fileparts(which(mfilename));
-            waveletfile=[path0 '\Wavelet\Wavelet\Wavelets_Data\' wavelet '.wvf'];
+            waveletfile=fullfile(path0,'Wavelet','Wavelet','Wavelets_Data',[wavelet '.wvf']);
             fid=fopen(waveletfile,'r');
             if fid~=-1 %read the wavelet from .wvf file
                 numpar=0;cnt=1;
