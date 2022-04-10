@@ -17,30 +17,26 @@ classdef Compressor < handle
         end
         
         function cData = computeCompressedSignal(obj)
-            freq = obj.data.freq;
-            freqCut = obj.cutFrequency(freq);
-            fourier.type_ft = obj.data.type_ft;
-            wave = obj.data.wave;
-            wCut = obj.cutWave(wave);
-            wavelet.type_wt = obj.data.type_wt;
-            fourier.type = 'FOURIER';
-            wavelet.type = 'WAVELET';
-            wavelet.level = obj.data.level;
+            fourier.freq = obj.cutFrequency(obj.data.freq);
+            fourier.type = obj.data.type.ft;
+            fourier.domain = 'FOURIER';
             fourier.dim = obj.data.dim;
+            
+            wavelet.wave = obj.cutWave(obj.data.wave);
+            wavelet.type = obj.data.type.wt;
+            wavelet.domain = 'WAVELET';
             wavelet.dim = obj.data.dim;
-            fourier.freq = freqCut;
-            wavelet.wave = wCut;
-            wavelet.motherwave = obj.data.motherwave;
             wavelet.wave_info = obj.data.wave_info;
-            wavelet.par = obj.data.par;
-            wavelet.ent_par = obj.data.ent_par;
-            s = struct('Fourier',Data(fourier),'Wavelet',Data(wavelet));
-            if obj.data.dim > 1
+            wavelet.motherwave = obj.data.motherwave;
+            
+            if obj.data.dim == 1
+                s = struct('Fourier',Data(fourier),'Wavelet',Data(wavelet));
+            else
                 U = obj.data.U;
                 S = obj.data.S;
                 V = obj.data.V;
                 [Ucut,Scut,Vcut] = obj.cutPCA(U,S,V);
-                pca.type = 'PCA';
+                pca.domain = 'PCA';
                 pca.dim = obj.data.dim;
                 pca.U = Ucut;
                 pca.S = Scut;

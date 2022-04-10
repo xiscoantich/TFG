@@ -2,8 +2,6 @@ classdef Data < handle
 
     properties (Access = public)
         signal
-        rec_f
-        rec_w
         rec_pca
         dim
         freq
@@ -12,8 +10,7 @@ classdef Data < handle
         motherwave
         dt
         wave_info
-        type_ft
-        type_wt
+        type
         S
         U
         V
@@ -161,7 +158,7 @@ classdef Data < handle
 
         function init(obj,cParams)
             
-            switch cParams.type
+            switch cParams.domain
                 
                 case 'TEMPORAL'
                     obj.name = cParams.name;
@@ -176,29 +173,12 @@ classdef Data < handle
                             obj.loadVideo()
                             obj.dim = 3;
                     end
-                    obj.type_ft = cParams.type_ft;
-                    obj.type_wt = cParams.type_wt;
-                    obj.level = cParams.level;
-                    obj.par = cParams.par;
-                    obj.ent_par = cParams.ent_par;
-                    
-                    %Make image divisible by 2 in the levels
-                    %Esto no arregla el problema :(
-                    if mod(size(obj.signal,1),2) ~= 0
-                        obj.signal(end+1,:)=obj.signal(end,:);
-                    end
-                    if mod(size(obj.signal,2),2) ~= 0
-                        obj.signal(:,end+1)=obj.signal(:,end);
-                    end
-                    l = 1;
-                    while mod(size(obj.signal,1),2^obj.level) ~= 0
-                        obj.signal = wextend('addrow','sym',obj.signal,l);
-                    end
-                    while mod(size(obj.signal,2),2^obj.level) ~= 0
-                        obj.signal = wextend('addcol','sym',obj.signal,l);
-                    end
-                    %-------------------------------------------
+                    obj.type = cParams.type;
+                    obj.wave_info.level = cParams.level;
+                    obj.wave_info.par = cParams.par;
+                    obj.wave_info.ent_par = cParams.ent_par;
                     obj.motherwave = cParams.motherwave;
+                    
                     obj.computeFourierRepresentation();
                     obj.computeWaveletRepresentation();
                     obj.computePCARepresentation()
@@ -206,16 +186,16 @@ classdef Data < handle
                 case 'FOURIER'
                         obj.freq = cParams.freq;
                         obj.dim = cParams.dim;
-                        obj.type_ft = cParams.type_ft;
+                        obj.type.ft = cParams.type;
                         obj.computeTimeRepresentationFromFreq();
                   
                 case 'WAVELET'
                         obj.wave = cParams.wave;
                         obj.dim = cParams.dim;
-                        obj.type_wt = cParams.type_wt;
+                        obj.type.wt = cParams.type;
                         obj.wave_info = cParams.wave_info;
                         obj.motherwave = cParams.motherwave;
-                        obj.level = cParams.level;
+                        %obj.level = cParams.level;
                         obj.computeTimeRepresentationFromWave();
              
                 case 'PCA'
@@ -262,6 +242,10 @@ classdef Data < handle
             imagepath=fullfile(path0,'Images',[obj.name,'.jpg']);
             A = imread(imagepath);
             obj.signal=double(rgb2gray(A));
+            
+            %Esto es solo para pruebas, se tiene que eliminar
+            obj.signal(end+1,:)= obj.signal(end,:);
+            obj.signal(end+1,:)= obj.signal(end,:);
         end
         
         function loadAudioSignal(obj)
@@ -302,10 +286,6 @@ classdef Data < handle
             obj.wave_info.paramout = wt.paramout;
             obj.wave_info.k = wt.k;
             obj.wave_info.l = wt.l;
-            obj.wave_info.packet_stream = wt.packet_stream;
-            obj.wave_info.s = wt.s;
-            obj.wave_info.par = obj.par; %Esto no deberia ir asi
-            obj.type_wt = wt.type_wt;
         end
         
         function computePCARepresentation(obj)
@@ -319,9 +299,6 @@ classdef Data < handle
             ft = FourierTransformer();
             ift = ft.inverseTransform(s);
             obj.signal = ift;
-            %Aqui tengo que hacer para que tambien tenga la informacion de
-            %que tipo de fft quiere hacer que deberia ser igual que la
-            %anterior
         end
         
         function computeTimeRepresentationFromWave(obj)

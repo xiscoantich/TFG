@@ -1,14 +1,14 @@
 function example
 folder = fileparts(which(mfilename)); 
 addpath(genpath(folder));
-d.type = 'TEMPORAL';
+d.domain = 'TEMPORAL';
 d.typesignal = 'IMAGE';
 d.name = 'cat';
 d.motherwave = 'Haar';
-d.type_ft = 'matlab';
-d.type_wt = 'packet';
-d.level=4;
-d.par=struct('N',d.level,'pdep',0,'wvf',load_wavelet('CDF_9x7'),'dec','greedy');
+d.type.ft = 'matlab';
+d.type.wt = 'packet';
+d.level=5;
+d.par=struct('N',d.level,'pdep',0,'wvf',load_wavelet(d.motherwave),'dec','greedy');
 d.ent_par=struct('ent','shannon','opt',0);
 
 a = Data(d);
@@ -30,7 +30,6 @@ e.keep = 0.01;
 e.data = a;
 c = Compressor(e);
 aCompressed = c.computeCompressedSignal();
-
 
 switch d.typesignal
     case 'AUDIO'

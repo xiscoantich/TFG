@@ -8,7 +8,7 @@ classdef WaveletTransformer < handle
         k
         l
         
-        %packet
+        packet
         packet_stream
         s
     end
@@ -17,7 +17,7 @@ classdef WaveletTransformer < handle
 
         function [wave] = directTransform(obj,cParams)
             data = cParams.data;
-            obj.type_wt = data.type_wt;
+            %obj.type_wt = data.type.wt;
             if data.dim == 1
                 wave = obj.wt1d(data);
             elseif data.dim == 2
@@ -27,11 +27,11 @@ classdef WaveletTransformer < handle
         
         function signal = inverseTransform(obj,cParams)
             data = cParams.data;
-            obj.type_wt = data.type_wt;
-            obj.N = data.wave_info.N;
-            obj.scale = data.wave_info.scale;
-            obj.paramout = data.wave_info.paramout;
-            obj.k = data.wave_info.k;
+%             obj.type_wt = data.type.wt;
+%             obj.N = data.wave_info.N;
+%             obj.scale = data.wave_info.scale;
+%             obj.paramout = data.wave_info.paramout;
+%             obj.k = data.wave_info.k;
            
             if data.dim == 1
                 signal = obj.iwt1d(data);
@@ -44,7 +44,7 @@ classdef WaveletTransformer < handle
     methods (Access = private)
         
         function wave = wt1d(obj,data)
-            switch obj.type_wt
+            switch data.type.wt
                 case 'cwt'
                     [wave,~,obj.scale,~,~,obj.paramout, obj.k] = obj.contwt(data.signal,data.dt,[],[],[],[],data.motherwave,[]);
                     obj.plotSpectogram(wave)
@@ -62,7 +62,7 @@ classdef WaveletTransformer < handle
         end
         
         function wave = wt2d(obj,data)
-            switch obj.type_wt
+            switch data.type.wt
                 case 'cwt'
                     [wave,~,obj.scale,~,~, obj.paramout, obj.k] = obj.contwt2(data.signal,data.dt,[],[],[],[],data.motherwave,[]);
                 case 'dwt'
@@ -76,13 +76,20 @@ classdef WaveletTransformer < handle
                 case 'matlab'
                     [wave,obj.l] = wavedec2(data.signal,data.level,data.motherwave);
                 case 'packet'
-                    [wave,obj.packet_stream,obj.s,E]=decomp_packets2D(data.signal,data.par,data.ent_par);
-                    draw_packets(wave,data.par.N,data.par.pdep,obj.s,obj.packet_stream);
+                    [wave,data.wave_info.packet_stream,obj.s,E]=decomp_packets2D(data.signal,data.wave_info.par,data.wave_info.ent_par);
+                    draw_packets(wave,data.wave_info.par.N,data.wave_info.par.pdep,obj.s,obj.packet_stream);
+                    %[wave,data.wave_info.packet_stream,data.wave_info.s,E]=obj.decomp_packets2D(data.signal,data.wave_info);
+                    %obj.draw_packets(wave,data);
+                    
+                    %EL ERROR ESTA EN LAS FUNCIONES DE
+                    %obj.decomp_packets2D, obj.draw_packets i la de rec
+                    %Copiar las funciones originales y volver a meter en el
+                    %codigo porque con las originales si que funciona bien
             end
         end
         
         function signal = iwt1d(obj,data)
-            switch obj.type_wt
+            switch data.type.wt
                 case 'cwt'
                     signal = obj.invcwt(data.wave, data.motherwave, data.wave_info.scale, data.wave_info.paramout, data.wave_info.k);
                 case 'convolution'
@@ -99,7 +106,7 @@ classdef WaveletTransformer < handle
         end
         
         function signal = iwt2d(obj,data)
-            switch obj.type_wt
+            switch data.type.wt
                 case 'cwt'
                     signal = obj.invcwt2(data.wave, data.motherwave, obj.scale, obj.paramout, obj.k);
                 case 'dwt'
@@ -114,6 +121,7 @@ classdef WaveletTransformer < handle
                     signal = waverec2(data.wave,data.wave_info.l,data.motherwave);
                 case 'packet'
                     signal = recon_packets2D(data.wave,data.wave_info.par,data.wave_info.packet_stream);
+                    %signal = obj.recon_packets2D(data.wave,data.wave_info);
             end
         end
         
@@ -1032,7 +1040,7 @@ classdef WaveletTransformer < handle
             Y = obj.idwt_dim(Y,1,wvf); %columns
         end
         
-        function [D,packet_stream,s,E]=decomp_packets2D(obj,Y,param,entp)
+        function [D,packet_stream,s,E]=decomp_packets2D(obj,Y,wave_info)
             %2D wavelet packets decomposition with entropy-based subband splitting
             %[D,packet_stream,s,E]=decomp_packets2D(Y,param,entp)
             %
@@ -1066,6 +1074,24 @@ classdef WaveletTransformer < handle
             % ent_par=struct('ent','shannon','opt',0);
             % [D,packet_stream,s,E]=decomp_packets2D('lena256.png',par,ent_par);
             % draw_packets(D,par.N,par.pdep,s,packet_stream); %displays the result of performed decomposition
+            
+            param = wave_info.par;
+            entp = wave_info.ent_par;
+            
+            %Make image divisible by 2 in the levels
+            if mod(size(Y,1),2) ~= 0
+                Y(end+1,:)=Y(end,:);
+            end
+            if mod(size(Y,2),2) ~= 0
+                Y(:,end+1)=Y(:,end);
+            end
+            l = 1;
+            while mod(size(Y,1),2^wave_info.level) ~= 0
+                Y = wextend('addrow','sym',Y,l);
+            end
+            while mod(size(Y,2),2^wave_info.level) ~= 0
+                Y = wextend('addcol','sym',Y,l);
+            end
             
             if ischar(Y)
                 Y=imread(Y);
@@ -1295,7 +1321,7 @@ classdef WaveletTransformer < handle
             end
         end
         
-        function A=recon_packets2D(obj,D,param,packet_stream)
+        function A=recon_packets2D(obj,D,wavelet_info)
             %2D wavelet packets reconstruction
             %A=recon_packets2D(D,param,packet_stream)
             %
@@ -1315,6 +1341,9 @@ classdef WaveletTransformer < handle
             %Example:
             % [D,packet_stream]=decomp_packets2D(Y,par,ent_par);%see decomp_packets2D.m
             % A=recon_packets2D(D,par,packet_stream);
+            
+            param = wavelet_info.par;
+            packet_stream = wavelet_info.packet_stream;
             
             param.pdep=param.pdep-param.N+1; %e.g. if N=5 and pdep=2 -> param.pdep=-2
             if size(packet_stream,2)>1
@@ -1509,7 +1538,7 @@ classdef WaveletTransformer < handle
             end
         end
         
-        function draw_packets(D,N,pdep,s,packet_stream)
+        function draw_packets(D,data)
             %Visualises the wavelet packets decomposition
             %draw_packets(D,N,pdep,s,packet_stream)
             %
@@ -1530,6 +1559,11 @@ classdef WaveletTransformer < handle
             % ent_par=struct('ent','shannon','opt',0);
             % [D,packet_stream,s,E]=decomp_packets2D('lena256.png',par,ent_par);
             % draw_packets(D,par.N,par.pdep,s,packet_stream);
+            N = data.wave_info.par.N;
+            pdep = data.wave_info.par.pdep;
+            s = data.wave_info.s;
+            packet_stream = data.wave_info.packet_stream;
+            
             
             scrsz = get(0,'ScreenSize');
             figure('Name','Wavelet packet structure drawn by bit information');

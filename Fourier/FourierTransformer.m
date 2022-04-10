@@ -10,7 +10,7 @@ classdef FourierTransformer < handle
         function freq = directTransform(obj,cParams)
             data = cParams.data;
             signal = data.signal;
-            obj.type_ft = data.type_ft;
+            obj.type_ft = data.type.ft;
             if data.dim == 1
                 freq = obj.FFT(signal);
             else
@@ -21,7 +21,7 @@ classdef FourierTransformer < handle
         function signal = inverseTransform(obj,cParams)
                 data = cParams.data;
                 freq = data.freq;
-                obj.type_ft = data.type_ft;
+                obj.type_ft = data.type.ft;
                 if data.dim == 1
                     signal = obj.IFFT(freq);
                 else
