@@ -47,3 +47,4 @@ if sizdim > 1 %if non-singleton dimension
     X = reshape(X,sv);
 end;
 X = shiftdim(X,N-d+1); %rotates the order of dimensions forward to the original
+end
