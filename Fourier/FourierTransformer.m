@@ -76,26 +76,24 @@ classdef FourierTransformer < handle
         
         function y = makepowerof2(obj,x)
             %Old power of 2
-            N = length(x);
-            y = x;
-            
-            while mod(log(N)/log(2),1)~=0
-            y(N+1) = 0;
-            N = N+1;
-            end
-            
-            %New power of two
 %             N = length(x);
 %             y = x;
-%             if mod(N,2) ~= 0
-%                 y(end+1)=y(end);
-%                 N=N+1;
-%             end
 %             
-%             while mod(N,2) ~= 0
-%                     y = wextend('1D','sym',y,1);
-%                     N=N+2;
-%             end     
+%             while mod(log(N)/log(2),1)~=0
+%             y(N+1) = 0;
+%             N = N+1;
+%             end
+            
+            %New power of two
+            N = length(x);
+            y = x;
+            if mod(N,2) ~= 0
+                y(end+1)=y(end);
+                N=N+1;
+            end
+              p = nextpow2(N);
+              extension = (2^p-N)/2;
+              y = wextend('1D','sym',y,extension);
         end
         
         function y = dft(obj,x)
@@ -272,14 +270,27 @@ classdef FourierTransformer < handle
         end
         
         function y = IFFT2(obj,x)
-            n=size(x,1); %filas
-            for i=1:n
-                x1(i,:)=obj.IFFT(x(i,:)); %FFT por filas
-            end
-            m=size(x1,2); %columnas
-            for i=1:m
-                y(:,i)=obj.IFFT(x1(:,i)); %FFT por columnas
-            end
+              %No funcionaa
+              
+%             n=size(x,1); %filas
+%             for i=1:n
+%                 x1(i,:)=obj.IFFT(x(i,:)); %FFT por filas
+%             end
+%             m=size(x1,2); %columnas
+%             for i=1:m
+%                 y(:,i)=obj.IFFT(x1(:,i)); %FFT por columnas
+%             end
+
+%             n=size(x,2); %columnas
+%             for i=1:n
+%                 x1(:,i)=obj.IFFT(x(:,i)); %FFT por columnas
+%             end
+%             m=size(x1,1); %filas
+%             for i=1:m
+%                 y(i,:)=obj.IFFT(x1(i,:)); %FFT por columnas
+%             end
+            y = ifft2(x);
+            
         end
         
     end

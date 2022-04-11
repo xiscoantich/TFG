@@ -238,10 +238,15 @@ classdef Data < handle
         end
 
         function  loadImage(obj)
-            path0=fileparts(which(mfilename));
-            imagepath=fullfile(path0,'Images',[obj.name,'.jpg']);
-            A = imread(imagepath);
-            obj.signal=double(rgb2gray(A));
+            switch obj.name
+                case 'test'
+                    obj.signal = magic(8);
+                otherwise
+                    path0=fileparts(which(mfilename));
+                    imagepath=fullfile(path0,'Images',[obj.name,'.jpg']);
+                    A = imread(imagepath);
+                    obj.signal=double(rgb2gray(A));
+            end
         end
         
         function loadAudioSignal(obj)

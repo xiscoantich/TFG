@@ -1,4 +1,4 @@
-classdef WaveletTransformer < handle
+    classdef WaveletTransformer < handle
 
     properties (Access = public)
         type_wt
