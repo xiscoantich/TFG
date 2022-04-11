@@ -21,6 +21,7 @@ classdef Compressor < handle
             fourier.type = obj.data.type.ft;
             fourier.domain = 'FOURIER';
             fourier.dim = obj.data.dim;
+            fourier.originalsize = size(obj.data.signal);
             
             wavelet.wave = obj.cutWave(obj.data.wave);
             wavelet.type = obj.data.type.wt;
@@ -28,6 +29,7 @@ classdef Compressor < handle
             wavelet.dim = obj.data.dim;
             wavelet.wave_info = obj.data.wave_info;
             wavelet.motherwave = obj.data.motherwave;
+            wavelet.originalsize = size(obj.data.signal);
             
             if obj.data.dim == 1
                 s = struct('Fourier',Data(fourier),'Wavelet',Data(wavelet));

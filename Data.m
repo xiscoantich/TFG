@@ -242,10 +242,6 @@ classdef Data < handle
             imagepath=fullfile(path0,'Images',[obj.name,'.jpg']);
             A = imread(imagepath);
             obj.signal=double(rgb2gray(A));
-            
-            %Esto es solo para pruebas, se tiene que eliminar
-            obj.signal(end+1,:)= obj.signal(end,:);
-            obj.signal(end+1,:)= obj.signal(end,:);
         end
         
         function loadAudioSignal(obj)

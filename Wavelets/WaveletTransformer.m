@@ -78,20 +78,6 @@ classdef WaveletTransformer < handle
                 case 'packet'
                     [wave,data.wave_info.packet_stream,obj.s,E]=obj.decomp_packets2D(data.signal,data.wave_info.par,data.wave_info.ent_par);
                     obj.draw_packets(wave,data.wave_info.par.N,data.wave_info.par.pdep,obj.s,obj.packet_stream);
-                    %[wave,data.wave_info.packet_stream,data.wave_info.s,E]=obj.decomp_packets2D(data.signal,data.wave_info);
-                    %obj.draw_packets(wave,data);
-                    
-%                     [wave,data.wave_info.packet_stream,obj.s,E]=decomp_packets2D(data.signal,data.wave_info.par,data.wave_info.ent_par);
-%                     draw_packets(wave,data.wave_info.par.N,data.wave_info.par.pdep,obj.s,obj.packet_stream);
-%                     
-%                     error = wave_obj-wave;
-%                     figure
-%                     imagesc(error)
-%                     colorbar
-                    %EL ERROR ESTA EN LAS FUNCIONES DE
-                    %obj.decomp_packets2D, obj.draw_packets i la de rec
-                    %Copiar las funciones originales y volver a meter en el
-                    %codigo porque con las originales si que funciona bien
             end
         end
         
@@ -808,7 +794,6 @@ classdef WaveletTransformer < handle
             S = D(Sind{:});
         end
 
-        
         function Y = idwt_2D(obj,A,H,V,D,wavelet)
             %Two-dimensional separable IDWT
             %Y=idwt_2D(A,H,V,D,wavelet)
@@ -839,20 +824,6 @@ classdef WaveletTransformer < handle
             Y = obj.idwt_dim(Y,1,wvf); %columns
         end
         
-        %         %Make image divisible by 2 in the levels
-        %             if mod(size(Y,1),2) ~= 0
-        %                 Y(end+1,:)=Y(end,:);
-        %             end
-        %             if mod(size(Y,2),2) ~= 0
-        %                 Y(:,end+1)=Y(:,end);
-        %             end
-        %             l = 1;
-        %             while mod(size(Y,1),2^wave_info.level) ~= 0
-        %                 Y = wextend('addrow','sym',Y,l);
-        %             end
-        %             while mod(size(Y,2),2^wave_info.level) ~= 0
-        %                 Y = wextend('addcol','sym',Y,l);
-        %             end
         function [D,packet_stream,s,E]=decomp_packets2D(obj,Y,param,entp)
             %2D wavelet packets decomposition with entropy-based subband splitting
             %[D,packet_stream,s,E]=decomp_packets2D(Y,param,entp)
@@ -899,7 +870,11 @@ classdef WaveletTransformer < handle
             %check the number of decompositions
             if (round(subr) ~= subr) || (round(subc) ~= subc)
                 %at the moment, only powers of two supported
-                error('Illegal number of decompositions for a given matrix!');
+                %error('Illegal number of decompositions for a given matrix!');
+                cprintf('err', 'Wavelet - Illegal number of decompositions for a given matrix! \n');
+                cprintf('err', 'Matrix has been turned power of for levels \n');
+                Y = makematrixdivisible(Y,param.N);
+                
             end
             %initialize the packet tree structure
             s=init_packettree(param.N,subr,subc);
@@ -1106,6 +1081,22 @@ classdef WaveletTransformer < handle
                         A = A(find(A)).^2;
                         ent = sum(log(A));
                 end;
+            end
+            function  Y = makematrixdivisible(Y,level)
+                %Make image divisible by 2 in the levels
+                if mod(size(Y,1),2) ~= 0
+                    Y(end+1,:)=Y(end,:);
+                end
+                if mod(size(Y,2),2) ~= 0
+                    Y(:,end+1)=Y(:,end);
+                end
+                extension = 1;
+                while mod(size(Y,1),2^level) ~= 0
+                    Y = wextend('addrow','sym',Y,extension);
+                end
+                while mod(size(Y,2),2^level) ~= 0
+                    Y = wextend('addcol','sym',Y,extension);
+                end
             end
         end
         

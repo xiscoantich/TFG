@@ -75,12 +75,27 @@ classdef FourierTransformer < handle
         end
         
         function y = makepowerof2(obj,x)
+            %Old power of 2
             N = length(x);
             y = x;
+            
             while mod(log(N)/log(2),1)~=0
-                y(N+1) = 0;
-                N = N+1;
+            y(N+1) = 0;
+            N = N+1;
             end
+            
+            %New power of two
+%             N = length(x);
+%             y = x;
+%             if mod(N,2) ~= 0
+%                 y(end+1)=y(end);
+%                 N=N+1;
+%             end
+%             
+%             while mod(N,2) ~= 0
+%                     y = wextend('1D','sym',y,1);
+%                     N=N+2;
+%             end     
         end
         
         function y = dft(obj,x)
