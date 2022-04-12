@@ -874,6 +874,11 @@
                 cprintf('err', 'Wavelet - Illegal number of decompositions for a given matrix! \n');
                 cprintf('err', 'Matrix has been turned power of for levels \n');
                 Y = makematrixdivisible(Y,param.N);
+                Y=double(Y);
+                [Drows,Dcols]=size(Y);
+                subr=Drows/(2^param.N); %dimensions of the lowest subband
+                subc=Dcols/(2^param.N);
+                D=zeros(Drows,Dcols);
                 
             end
             %initialize the packet tree structure

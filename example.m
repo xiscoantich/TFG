@@ -4,11 +4,11 @@ addpath(genpath(folder));
 d.domain = 'TEMPORAL';
 d.typesignal = 'IMAGE';
 d.name = 'cat';
-d.motherwave = 'Haar';
+d.motherwave = 'CDF_9x7';
 d.type.ft = 'matrix';
 d.type.wt = 'packet';
-d.level=5;
-d.par=struct('N',d.level,'pdep',0,'wvf',load_wavelet(d.motherwave),'dec','greedy');
+d.level=7;
+d.par=struct('N',d.level,'pdep',0,'wvf',d.motherwave,'dec','greedy');
 d.ent_par=struct('ent','shannon','opt',0);
 
 a = Data(d);
@@ -30,6 +30,8 @@ e.keep = 0.01;
 e.data = a;
 c = Compressor(e);
 aCompressed = c.computeCompressedSignal();
+
+
 
 switch d.typesignal
     case 'AUDIO'

@@ -24,6 +24,7 @@ classdef Data < handle
      
     properties (Access = private)
         name
+        originalsize
     end
     
     methods (Access = public)
@@ -187,6 +188,7 @@ classdef Data < handle
                         obj.freq = cParams.freq;
                         obj.dim = cParams.dim;
                         obj.type.ft = cParams.type;
+                        obj.originalsize = cParams.originalsize;
                         obj.computeTimeRepresentationFromFreq();
                   
                 case 'WAVELET'
@@ -195,6 +197,7 @@ classdef Data < handle
                         obj.type.wt = cParams.type;
                         obj.wave_info = cParams.wave_info;
                         obj.motherwave = cParams.motherwave;
+                        obj.originalsize = cParams.originalsize;
                         %obj.level = cParams.level;
                         obj.computeTimeRepresentationFromWave();
              
@@ -300,6 +303,7 @@ classdef Data < handle
             ft = FourierTransformer();
             ift = ft.inverseTransform(s);
             obj.signal = ift;
+            obj.cutOriginalSize();
         end
         
         function computeTimeRepresentationFromWave(obj)
@@ -307,6 +311,7 @@ classdef Data < handle
             wt = WaveletTransformer();
             iwt = wt.inverseTransform(s);
             obj.signal = iwt;
+            obj.cutOriginalSize();
         end
         
         function computeTimeRepresentationFromPCA(obj)
@@ -314,6 +319,27 @@ classdef Data < handle
             pca = PCATransformer();
             ipca = pca.inverseTransform(s);
             obj.signal = ipca;
+        end
+        
+        function cutOriginalSize(obj)
+            n = size(obj.signal);
+            n0 = obj.originalsize;
+            if mod(n0(1),2)~=0
+                obj.signal = obj.signal(end-1,:);
+                n0(1) = n0(1)-1;
+            end
+            if mod(n0(2),2)~=0
+                obj.signal = obj.signal(:,end-1);
+                n0(2) = n0(2)-1;
+            end
+            if n0(1) ~= n(1)
+                ncut(1) = (n(1)-n0(1))/2;
+                obj.signal = obj.signal(1+ncut(1):end-ncut(1),:);
+            end
+            if n0(2) ~= n(2)
+                ncut(2) = (n(2)-n0(2))/2;
+                obj.signal = obj.signal(:,1+ncut(2):end-ncut(2));
+            end
         end
     end
 end
