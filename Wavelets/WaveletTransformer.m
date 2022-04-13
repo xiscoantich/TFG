@@ -55,9 +55,9 @@
                 case 'dyadic_decomp' %Esta no se si la deberia eliminar
                     [wave,obj.N] = obj.dwt_dyadic_decomp(data.signal,data.motherwave,obj.N);
                 case 'multilevel'
-                    [wave,obj.l] = obj.mlwavelet(data.signal,data.level,data.motherwave);
+                    [wave,obj.l] = obj.mlwavelet(data.signal,data.wave_info.level,data.motherwave);
                 case 'matlab'
-                    [wave,obj.l] = wavedec(data.signal,data.level,data.motherwave);
+                    [wave,obj.l] = wavedec(data.signal,data.wave_info.level,data.motherwave);
             end
         end
         
@@ -86,9 +86,9 @@
                 case 'cwt'
                     signal = obj.invcwt(data.wave, data.motherwave, data.wave_info.scale, data.wave_info.paramout, data.wave_info.k);
                 case 'convolution'
-                    signal = obj.idwt_conv1D(data.wave,data.wave_info.d,data.motherwave);
+                    signal = obj.idwt_conv1D(data.wave(:,1),data.wave(:,2),data.motherwave);
                 case 'lifting'
-                    signal = obj.idwt_lifting1D(data.wave,data.wave_info.d,data.motherwave);
+                    signal = obj.idwt_lifting1D(data.wave(:,1),data.wave(:,2),data.motherwave);
                 case 'dyadic_decomp'
                     signal = obj.idwt_dyadic_recon(data.wave,data.motherwave,data.wave_info.N);
                 case 'multilevel'
@@ -338,6 +338,27 @@
         end
         
         function y = idwt_conv1D(obj,a,d,wvf)
+            %IDWT of a 1D signal in convolution implementation
+            %y=idwt_conv1D(a,d,wvf)
+            %
+            %Input:
+            % a - approximation (low-pass) signal
+            % d - detail (high-pass) signal
+            % wvf - wavelet identification string, or wavelet data structure
+            %
+            %Output:
+            % y - reconstructed signal
+            %
+            %Uses:
+            % load_wavelet.m
+            %
+            %Note:
+            % TODO: handle the situation where the signal is shorter than what the
+            % extension requires. Different extensions.
+            %
+            %Example:
+            % y = idwt_conv1D(a,d,wvf);
+            % y = idwt_conv1D(a,d,'CDF_9x7');
             if ischar(wvf)
                 wvf = obj.load_wavelet(wvf,'E');
             end

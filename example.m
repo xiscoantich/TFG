@@ -2,12 +2,12 @@ function example
 folder = fileparts(which(mfilename)); 
 addpath(genpath(folder));
 d.domain = 'TEMPORAL';
-d.typesignal = 'IMAGE';
-d.name = 'cat';
-d.motherwave = 'CDF_9x7';
+d.typesignal = 'AUDIO';
+d.name = 'sinus';
+d.motherwave = 'Haar';%'CDF_9x7';
 d.type.ft = 'matrix';
-d.type.wt = 'packet';
-d.level=7;
+d.type.wt = 'multilevel';
+d.level=1;
 d.par=struct('N',d.level,'pdep',0,'wvf',d.motherwave,'dec','greedy');
 d.ent_par=struct('ent','shannon','opt',0);
 
@@ -26,7 +26,7 @@ a = Data(d);
 % figure
 % plot(error)
 
-e.keep = 0.01;
+e.keep = 0.5;
 e.data = a;
 c = Compressor(e);
 aCompressed = c.computeCompressedSignal();

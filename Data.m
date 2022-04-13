@@ -322,23 +322,36 @@ classdef Data < handle
         end
         
         function cutOriginalSize(obj)
-            n = size(obj.signal);
-            n0 = obj.originalsize;
-            if mod(n0(1),2)~=0
-                obj.signal = obj.signal(end-1,:);
-                n0(1) = n0(1)-1;
-            end
-            if mod(n0(2),2)~=0
-                obj.signal = obj.signal(:,end-1);
-                n0(2) = n0(2)-1;
-            end
-            if n0(1) ~= n(1)
-                ncut(1) = (n(1)-n0(1))/2;
-                obj.signal = obj.signal(1+ncut(1):end-ncut(1),:);
-            end
-            if n0(2) ~= n(2)
-                ncut(2) = (n(2)-n0(2))/2;
-                obj.signal = obj.signal(:,1+ncut(2):end-ncut(2));
+            if obj.dim ==1
+                n = size(obj.signal);
+                n0 = obj.originalsize;
+                if mod(n0,2)~=0
+                    obj.signal = obj.signal(end-1);
+                    n0 = n0-1;
+                end
+                if n0 ~= n(1)
+                    ncut = (n-n0)/2;
+                    obj.signal = obj.signal(1+ncut:end-ncut);
+                end
+            elseif obj.dim == 2
+                n = size(obj.signal);
+                n0 = obj.originalsize;
+                if mod(n0(1),2)~=0
+                    obj.signal = obj.signal(end-1,:);
+                    n0(1) = n0(1)-1;
+                end
+                if mod(n0(2),2)~=0
+                    obj.signal = obj.signal(:,end-1);
+                    n0(2) = n0(2)-1;
+                end
+                if n0(1) ~= n(1)
+                    ncut(1) = (n(1)-n0(1))/2;
+                    obj.signal = obj.signal(1+ncut(1):end-ncut(1),:);
+                end
+                if n0(2) ~= n(2)
+                    ncut(2) = (n(2)-n0(2))/2;
+                    obj.signal = obj.signal(:,1+ncut(2):end-ncut(2));
+                end
             end
         end
     end
