@@ -267,6 +267,7 @@ classdef FourierTransformer < handle
                 end
                 y(k+1) = real(sum(int));
             end
+            y = y/length(y);
         end
         
         function y = IFFT2(obj,x)
