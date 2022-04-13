@@ -2,29 +2,18 @@ function example
 folder = fileparts(which(mfilename)); 
 addpath(genpath(folder));
 d.domain = 'TEMPORAL';
-d.typesignal = 'AUDIO';
-d.name = 'sinus';
-d.motherwave = 'Haar';%'CDF_9x7';
-d.type.ft = 'dft';
-d.type.wt = 'dyadic_decomp';
-d.level=1;
+d.typesignal = 'IMAGE';%'AUDIO';
+d.name = 'cat';%'sinus';
+d.motherwave = 'CDF_9x7';%'Haar';%'Haar';%'CDF_9x7';
+d.type.ft = 'matlab';%'dft';
+d.type.wt = 'packet';%'dyadic_decomp';
+d.level=5;
 d.par=struct('N',d.level,'pdep',0,'wvf',d.motherwave,'dec','greedy');
 d.ent_par=struct('ent','shannon','opt',0);
 
 a = Data(d);
 
-% e.type = 'TEMPORAL';
-% e.typesignal = 'IMAGE';
-% e.name = 'cat';
-% e.motherwave = 'Haar';
-% e.type_ft = 'matlab';
-% e.type_wt = 'matlab';
-% e.level=1;
-% b = Data(e);
-% 
-% error = b.wave-a.wave;
-% figure
-% plot(error)
+
 
 e.keep = 0.5;
 e.data = a;

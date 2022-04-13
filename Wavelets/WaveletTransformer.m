@@ -1,4 +1,4 @@
-    classdef WaveletTransformer < handle
+classdef WaveletTransformer < handle
 
     properties (Access = public)
         type_wt
@@ -7,7 +7,7 @@
         paramout
         k
         l
-        
+
         packet
         packet_stream
         s
@@ -24,25 +24,25 @@
                 wave = obj.wt2d(data);
             end
         end
-        
+
         function signal = inverseTransform(obj,cParams)
             data = cParams.data;
-%             obj.type_wt = data.type.wt;
-%             obj.N = data.wave_info.N;
-%             obj.scale = data.wave_info.scale;
-%             obj.paramout = data.wave_info.paramout;
-%             obj.k = data.wave_info.k;
-           
+            %             obj.type_wt = data.type.wt;
+            %             obj.N = data.wave_info.N;
+            %             obj.scale = data.wave_info.scale;
+            %             obj.paramout = data.wave_info.paramout;
+            %             obj.k = data.wave_info.k;
+
             if data.dim == 1
                 signal = obj.iwt1d(data);
             elseif data.dim == 2
-                signal = obj.iwt2d(data);     
+                signal = obj.iwt2d(data);
             end
         end
     end
-    
+
     methods (Access = private)
-        
+
         function wave = wt1d(obj,data)
             switch data.type.wt
                 case 'cwt'
@@ -60,7 +60,7 @@
                     [wave,obj.l] = wavedec(data.signal,data.wave_info.level,data.motherwave);
             end
         end
-        
+
         function wave = wt2d(obj,data)
             switch data.type.wt
                 case 'cwt'
@@ -72,7 +72,7 @@
                     wave(:,:,3) = V;
                     wave(:,:,4) = D;
                 case 'multilevel'
-                    [wave,obj.l] = obj.mlwavelet2(data.signal,data.level,data.motherwave); %Deberia guardar los datos de otra manera 
+                    [wave,obj.l] = obj.mlwavelet2(data.signal,data.level,data.motherwave); %Deberia guardar los datos de otra manera
                 case 'matlab'
                     [wave,obj.l] = wavedec2(data.signal,data.level,data.motherwave);
                 case 'packet'
@@ -80,7 +80,7 @@
                     obj.draw_packets(wave,data.wave_info.par.N,data.wave_info.par.pdep,obj.s,obj.packet_stream);
             end
         end
-        
+
         function signal = iwt1d(obj,data)
             switch data.type.wt
                 case 'cwt'
@@ -97,7 +97,7 @@
                     signal = waverec(data.wave,data.wave_info.l,data.motherwave);
             end
         end
-        
+
         function signal = iwt2d(obj,data)
             switch data.type.wt
                 case 'cwt'
@@ -117,9 +117,9 @@
                     %signal = obj.recon_packets2D(data.wave,data.wave_info);
             end
         end
-        
+
         function [wave,period,scale,coi, dj, paramout, k] = contwt(obj,Y,dt,pad,dj,s0,J1,mother,param)
-            
+
             if (nargin < 8) || isempty(param), param = -1; end
             if (nargin < 7) || isempty(mother) mother = -1; end
             if (nargin < 6) || isempty(J1), J1 = -1; end
@@ -129,50 +129,50 @@
             if (nargin < 2)
                 error('Must input a vector Y and sampling time DT')
             end
-            
+
             n1 = length(Y);
-            
+
             if (s0 == -1), s0=2*dt; end
             if (dj == -1), dj = 1./4.; end
             if (J1 == -1), J1=ceil((log(n1*dt/s0)/log(2))/dj); end  %changed fix to ceil(), JE Oct 12 2014
             if (mother == -1), mother = 'MORLET'; end
-            
+
             %....construct time series to analyze, pad if necessary
             x(1:n1) = Y - mean(Y);
             %x(1:n1) = Y;
-            
+
             if (pad == 1)
                 x = obj.makepowerof2(x);
             end
             n = length(x);
-            
+
             %....construct wavenumber array used in transform [Eqn(5)]
             k = [1:fix(n/2)];
             k = k.*((2.*pi)/(n*dt));
             k = [0., k, -k(fix((n-1)/2):-1:1)];
-            
+
             %....compute FFT of the (padded) time series
-            
+
             f = fft(x); % [Eqn(3)]
-            
+
             %....construct SCALE array & empty PERIOD & WAVE arrays
             scale = s0*2.^((0:J1)*dj);
             period = scale;
             wave = zeros(J1+1,n);  % define the wavelet array
             wave = wave + i*wave;  % make it complex
-            
+
             % loop through all scales and compute transform
             for a1 = 1:J1+1
                 [daughter,fourier_factor,coi,dofmin, paramout]=wave_bases(mother,k,scale(a1),param);
                 wave(a1,:) = ifft(f.*daughter);  % wavelet transform[Eqn(4)]
             end
-            
+
             period = fourier_factor*scale;
             coi = coi*dt*[1E-5,1:((n1+1)/2-1),fliplr((1:(n1/2-1))),1E-5];  % COI [Sec.3g]
             wave = wave(:,1:n1);  % get rid of padding before returning
             return
         end
-        
+
         function [wave,period,scale,coi, dj, paramout, k] = contwt2(obj,Y,dt,pad,dj,s0,J1,mother,param)
             m=size(x,2); %columnas
             for i=1:m
@@ -183,24 +183,24 @@
                 y(i,:)=obj.FFT(x1(i,:)); %FFT por filas
             end
         end
-        
+
         function Xrec = invcwt(obj,wvcfs, mother, scale, param, k)
-            
+
             if isempty(mother)
                 mother = 'MORLET';
             end
-            
+
             % take the real part of the wavelet transform.
             Wr = real(wvcfs);
             N = size(Wr, 2);
             %compute the sum
             scale = scale(:); %make a column vector
             s = repmat(scale, [1, size(wvcfs,2)]);
-            
+
             summand = sum(Wr./sqrt(s), 1);
-            
+
             %compute the constant factor out front
-            
+
             %compute the fourier spectrum at each scale [Eq(12)]
             for a1 = 1:length(scale)
                 daughter=wave_bases(mother,k,scale(a1),param);
@@ -212,12 +212,12 @@
             % whos Wdelta
             RealWdelta = real(Wdelta);
             RealWdelta = RealWdelta(:); %make a column vector
-            
+
             C = sum(RealWdelta./sqrt(scale));
-            
+
             Xrec = (1/C)*summand;
         end
-        
+
         function [c,l] = mlwavelet(obj,Y,n,wavelet)
             %load the wavelet here
             if ischar(wavelet)
@@ -225,11 +225,11 @@
             else
                 wvf = wavelet;
             end
-            
-            if isempty(n) 
+
+            if isempty(n)
                 n = wmaxlev(length(Y),wavelet);
             end
-            
+
             Y=double(Y);
             [Dcols]=size(Y,1);
             subc=Dcols/(2^n);%dimensions of the lowest subband
@@ -238,41 +238,41 @@
                 %at the moment, only powers of two supported
                 error('Illegal number of decompositions for a given matrix!');
             end
-             
+
             % Initialization.
             s = size(Y);
             Y = Y(:).'; % row vector
             c = [];
             l = zeros(1,n+2,'like',real(Y([])));
-            
+
             l(end) = length(Y);
             for k = 1:n
                 [Y,d] = obj.dwt_lifting1D(Y,wvf); % decomposition
                 c     = [d c];            % store detail
                 l(n+2-k) = length(d);     % store length
             end
-            
+
             % Last approximation.
             c = [Y c];
             l(1) = length(Y);
-            
+
             if s(1)>1
                 c = c.';
                 l = l';
             end
         end
-        
+
         function [c,s] = mlwavelet2(obj,x,n,wavelet)
-            
+
             %load the wavelet here
             if ischar(wavelet)
                 wvf = obj.load_wavelet(wavelet,'E');
             else
                 wvf = wavelet;
             end
-            
+
             if isempty(n)
-               n = wmaxlev(length(x),wavelet);
+                n = wmaxlev(length(x),wavelet);
             end
             % Initialization.
             c = [];
@@ -282,14 +282,14 @@
                 c = cast(c,"like",x);
                 return;
             end
-            
+
             s(end,:) = size(x);
-            for i=1:n  
+            for i=1:n
                 [x,h,v,d] = obj.dwt_2D(x,wvf); % decomposition
                 c = [h(:)' v(:)' d(:)' c];     % store details
                 s(n+2-i,:) = size(x);          % store size
             end
-            
+
             % Last approximation.
             c = [x(:)' c];
             s(1,:) = size(x);
@@ -303,7 +303,7 @@
             if (strcmp(wvf.wvf_type,'symmetric_even') || strcmp(wvf.wvf_type,'symmetric_odd'))
                 sym_ext = true;
             end
-            
+
             %low-pass filtering
             Lle = -1 * wvf.filt_H0_delay(1); %left extension length
             Lre = wvf.filt_H0_delay(end); %right extension length
@@ -319,7 +319,7 @@
             ao = conv2(x(I),h0','valid');
             %downsample
             a = ao(1:2:end);
-            
+
             %high-pass filtering
             Hle = -1 * wvf.filt_H1_delay(1); %left extension
             Hre = wvf.filt_H1_delay(end); %right extension
@@ -336,7 +336,7 @@
             %downsample
             d = do(1:2:end);
         end
-        
+
         function y = idwt_conv1D(obj,a,d,wvf)
             %IDWT of a 1D signal in convolution implementation
             %y=idwt_conv1D(a,d,wvf)
@@ -366,7 +366,7 @@
             if (strcmp(wvf.wvf_type,'symmetric_even') || strcmp(wvf.wvf_type,'symmetric_odd'))
                 sym_ext = true;
             end
-            
+
             %%low-pass filtering%%
             Lle = -1 * wvf.filt_G0_delay(1); %left extension
             Lre = wvf.filt_G0_delay(end); %right extension
@@ -383,7 +383,7 @@
             g0 = fliplr(wvf.filt_G0);
             %convolution
             ao = conv2(au(I),g0,'valid');
-            
+
             %%high-pass filtering%%
             Hle = -1 * wvf.filt_G1_delay(1); %left extension
             Hre = wvf.filt_G1_delay(end); %right extension
@@ -402,11 +402,11 @@
             g1 = fliplr(wvf.filt_G1);
             %convolution
             do = conv2(du(I),g1,'valid');
-            
+
             %%combine%%
             y = ao + do;
         end
-        
+
         function [Y,N]=dwt_dyadic_decomp(obj,X,wavelet,N)
             %Dyadic wavelet decomposition of a multidimensional signal
             %[Y,N]=dwt_dyadic_decomp(X,wavelet,N)
@@ -435,12 +435,12 @@
             %Example:
             % Y=dwt_dyadic_decomp(X,'CDF_9x7',6);
             % [Y,N]=dwt_dyadic_decomp('Lena512.png','Haar');
-            
+
             if ischar(X)
                 X=imread(X);
             end
             Y=double(X);
-            
+
             transposed = 0; %by default do not transpose
             if isvector(X)
                 n = 1; %number of dimensions
@@ -452,7 +452,7 @@
                 n = ndims(Y);
             end
             Xsiz=size(Y);
-            
+
             %to find Nmax - the maximum number of decompositions possible
             [~,hd,Nmax]= obj.subband_dim(Xsiz, Inf);
             if isempty(N)
@@ -462,7 +462,7 @@
                 warning(['Specified number of decompositions exceeds the maximum. N is set to Nmax = ' num2str(Nmax)]);
                 N = Nmax;
             end
-            
+
             Lsiz = Xsiz; %low-pass subband dimensions
             for i=1:N
                 [Li,Lind] = obj.submatrix(Y,Lsiz);
@@ -472,12 +472,12 @@
                 Y(Lind{:}) = Li;
                 Lsiz = ceil(Lsiz/2); %i.e. low-pass of signal of 3 samples contains 2 samples
             end
-            
+
             if transposed
                 Y = Y';
             end
         end
-        
+
         function X=dwt_dim(obj,X,d,wavelet)
             %DWT in specific dimension of an n-dimensional matrix
             %X=dwt_dim(X,d,wavelet)
@@ -501,14 +501,14 @@
             %
             %Example:
             % Y = dwt_dim(X,1,'CDF_9x7');
-            
+
             %load the wavelet here
             if ischar(wavelet)
                 wvf = obj.load_wavelet(wavelet);
             else
                 wvf = wavelet;
             end
-            
+
             if ~isa(X,'double')
                 X = double(X);
             end
@@ -528,7 +528,7 @@
             end;
             X = shiftdim(X,N-d+1); %rotates the order of dimensions forward to the original
         end
-        
+
         function [a,d] = dwt_lifting1D(obj,x,wvf)
             %DWT of a 1D signal in lifting implementation
             %[a,d]=dwt_lifting1D(x,wvf)
@@ -547,14 +547,14 @@
             %Example:
             % [a,d] = dwt_lifting1D(x,wvf);
             % [a,d] = dwt_lifting1D(x,'CDF_9x7');
-            
+
             if ischar(wvf)
                 wvf = obj.load_wavelet(wvf);
             end;
             s = wvf.lift_coeff;
             K = wvf.lift_norm;
             cn = wvf.lift_cnct;
-            
+
             %xe - for 1-pixel extended signal
             xe = zeros(1,length(x)+2);
             xe(2:end-1) = x;
@@ -580,7 +580,7 @@
             a = xe(2:2:end-1) * K(1);
             d = xe(3:2:end-1) * K(2);
         end
-            
+
         function Xr = idwt_dyadic_recon(obj,Y,wavelet,N)
             %Dyadic wavelet reconstruction of a multidimensional signal
             %X=idwt_dyadic_recon(Y,wavelet,N)
@@ -599,9 +599,9 @@
             %
             %Example:
             % Xr=idwt_dyadic_recon(Y,'CDF_9x7',6);
-            
+
             Xr=double(Y);
-            
+
             transposed = 0; %by default, do not transpose
             if (size(Y,1) == 1) %if one-row vector, needs to be transposed
                 Xr = Xr';
@@ -613,7 +613,7 @@
             else
                 n = ndims(Xr);
             end
-            
+
             for i=N-1:-1:0
                 Lsiz = ceil(Xsiz / 2^i); %low-pass subband dimensions
                 [Li,Lind] = obj.submatrix(Xr,Lsiz);
@@ -622,12 +622,12 @@
                 end
                 Xr(Lind{:}) = Li;
             end
-            
+
             if transposed
                 Xr = Xr';
             end
         end
-        
+
         function X = idwt_dim(obj,X,d,wavelet)
             %IDWT in specific dimension of an n-dimensional matrix
             %X=idwt_dim(X,d,wavelet)
@@ -647,14 +647,14 @@
             %
             %Example:
             % X = idwt_dim(Y,1,'Haar');
-            
+
             %load the wavelet here
             if ischar(wavelet)
                 wvf = obj.load_wavelet(wavelet,'E');
             else
                 wvf = wavelet;
             end;
-            
+
             N = ndims(X);
             dimprod = numel(X);
             X = shiftdim(X,d-1); %rotates the order of dimensions
@@ -671,7 +671,7 @@
             end;
             X = shiftdim(X,N-d+1); %rotates the order of dimensions forward to the original
         end
-        
+
         function y = idwt_lifting1D(obj,a,d,wvf)
             %IDWT of a 1D signal in lifting implementation
             %y=idwt_lifting1D(a,d,wvf)
@@ -690,14 +690,14 @@
             %Example:
             % y = idwt_lifting1D(a,d,wvf);
             % y = idwt_lifting1D(a,d,'CDF_9x7');
-            
+
             if ischar(wvf)
                 wvf = obj.load_wavelet(wvf,'E');
             end
             s = wvf.lift_coeff;
             K = wvf.lift_norm;
             cn = wvf.lift_cnct;
-            
+
             %xe - for 1-pixel extended signal
             xe = zeros(1,length(a)+length(d)+2);
             %undo the normalisation
@@ -722,9 +722,9 @@
                 end
             end
             y = xe(2:end-1);
-            
+
         end
-        
+
         function [A,H,V,D] = dwt_2D(obj,X,wavelet)
             %Two-dimensional separable DWT
             %[A,H,V,D]=dwt_2D(X,wavelet)
@@ -744,23 +744,23 @@
             %
             %Example:
             % [A,H,V,D] = dwt_2D(X,'CDF_9x7');
-            
+
             %load the wavelet here
             if ischar(wavelet)
                 wvf = obj.load_wavelet(wavelet);
             else
                 wvf = wavelet;
             end
-            
+
             X = obj.dwt_dim(X,1,wvf); %columns
             X = obj.dwt_dim(X,2,wvf); %rows
-            
+
             A = obj.subband(X,1,'ll');
             H = obj.subband(X,1,'hl');
             V = obj.subband(X,1,'lh');
             D = obj.subband(X,1,'hh');
         end
-        
+
         function [S,Sind,Sdim]=subband(obj,D,N,band)
             %[S,Sind,Sdim]=subband(D,N,band)
             %Version: 3.01, Date: 2005/01/01, author: Nikola Sprljan
@@ -785,11 +785,11 @@
             % D=dwt_dyadic_decomp(A,'CDF_9x7',4);
             % S=subband(D,4,'hl');
             % S=subband(D,6,'ll');
-            
+
             if (ndims(D) ~= 2)
                 error('Wavelet coefficients array of other dimensions than 2D!');
             end;
-            
+
             [sizrow,sizcol] = size(D);
             [ldr,hdr]= obj.subband_dim(sizrow, N);
             [ldc,hdc]= obj.subband_dim(sizcol, N);
@@ -833,7 +833,7 @@
             %
             %Example:
             % Y = idwt_2D(A,H,V,D,'CDF_9x7');
-            
+
             %load the wavelet here
             if ischar(wavelet)
                 wvf = obj.load_wavelet(wavelet,'E');
@@ -844,7 +844,7 @@
             Y = obj.idwt_dim(Y,2,wvf); %rows
             Y = obj.idwt_dim(Y,1,wvf); %columns
         end
-        
+
         function [D,packet_stream,s,E]=decomp_packets2D(obj,Y,param,entp)
             %2D wavelet packets decomposition with entropy-based subband splitting
             %[D,packet_stream,s,E]=decomp_packets2D(Y,param,entp)
@@ -879,7 +879,7 @@
             % ent_par=struct('ent','shannon','opt',0);
             % [D,packet_stream,s,E]=decomp_packets2D('lena256.png',par,ent_par);
             % draw_packets(D,par.N,par.pdep,s,packet_stream); %displays the result of performed decomposition
-            
+
             if ischar(Y)
                 Y=imread(Y);
             end
@@ -900,7 +900,7 @@
                 subr=Drows/(2^param.N); %dimensions of the lowest subband
                 subc=Dcols/(2^param.N);
                 D=zeros(Drows,Dcols);
-                
+
             end
             %initialize the packet tree structure
             s=init_packettree(param.N,subr,subc);
@@ -933,7 +933,7 @@
             end;
             E=E+subb_entropy(DA,entp.ent,entp.opt)+subb_entropy(DV,entp.ent,entp.opt)+...
                 subb_entropy(DH,entp.ent,entp.opt)+subb_entropy(DH,entp.ent,entp.opt);
-            
+
             function [band,E,p_stream,s]=decompose_subband(subbindex,band,param,entp,p_stream,s)
                 %Decompose subband a bit further
                 s0=struct('scale',0,'parent',0,'children',0,'band_abs',0,'band_rel',0);
@@ -1125,7 +1125,7 @@
                 end
             end
         end
-        
+
         function A=recon_packets2D(obj,D,wavelet_info)
             %2D wavelet packets reconstruction
             %A=recon_packets2D(D,param,packet_stream)
@@ -1146,10 +1146,10 @@
             %Example:
             % [D,packet_stream]=decomp_packets2D(Y,par,ent_par);%see decomp_packets2D.m
             % A=recon_packets2D(D,par,packet_stream);
-            
+
             param = wavelet_info.par;
             packet_stream = wavelet_info.packet_stream;
-            
+
             param.pdep=param.pdep-param.N+1; %e.g. if N=5 and pdep=2 -> param.pdep=-2
             if size(packet_stream,2)>1
                 packet_stream=fliplr(packet_stream);
@@ -1174,7 +1174,7 @@
                 D(1:siz(1),1:siz(2))=A;
                 param.pdep=param.pdep+1;
             end
-            
+
             function [band,cnt]=recon_entropy(band,param,packet_stream,cnt)
                 cnt=cnt+1;
                 if packet_stream(cnt)
@@ -1194,10 +1194,10 @@
                 end
             end
         end
-        
+
     end
     methods (Access = private, Static)
-        
+
         function wvf=load_wavelet(wavelet,normw)
             %Loads definition and properties of a wavelet filter
             %wvf=load_wavelet(wavelet,normw)
@@ -1265,20 +1265,20 @@
             % wvf = load_wavelet('Haar');
             % wvf = load_wavelet('CDF_9x7',[1 1]);
             % wvf = load_wavelet('LeGall_5x3','E');
-            
+
             wvf = struct('id',{},'wvf_type',{},'lift_coeff',{},'lift_cnct',{},'lift_norm',{},...
                 'filt_H0',{},'filt_H0_delay',{},'filt_H1',{},'filt_H1_delay',{},...
                 'filt_G0',{},'filt_G0_delay',{},'filt_G1',{},'filt_G1_delay',{});
             wvf(1).id = wavelet;
-            
+
             LoD_F = []; LoD_F_delay = [];
             HiD_F = []; HiD_F_delay = [];
             %LoR_F = []; LoR_F_delay = [];
             %HiR_F = []; HiR_F_delay = [];
-            
+
             %sets the path where the wavelets are stored
             path0=fileparts(which(mfilename));
-            waveletfile=[path0 '\Wavelets_Data\' wavelet '.wvf'];
+            waveletfile=fullfile(path0,'Wavelets_Data', [wavelet '.wvf']);
             fid=fopen(waveletfile,'r');
             if fid~=-1 %read the wavelet from .wvf file
                 numpar=0;cnt=1;
@@ -1325,7 +1325,7 @@
             else
                 error('The specified wavelet cannot be found!');
             end;
-            
+
             % if (wvf.lift_coeff(1) == 0)
             %     warning('Lifting coefficients not specified!');
             % end;
@@ -1346,12 +1346,12 @@
             [P0z,P0zdelay] = signal_mult(H0z,H0delay,H1nz,H1delay);
             [P0nz,P0nzdelay] = signal_mult(H0nz,H0delay,H1z,H1delay);
             [PR,PRdelay] = signal_add(P0z,P0zdelay,-1*P0nz,P0nzdelay);
-            
+
             %INSTRUCTION: change PR_tolerance depending on how precise the coefficients have to be
             PR_tolerance = 10^(-5);
             PR(abs(PR) < PR_tolerance) = 0;
             [PR,PRdelay] = signal_add(PR,PRdelay,0,0); %to get rid of extra zeroes
-            
+
             if (length(PR) > 1)
                 error('Perfect reconstruction not satisfied!');
             end;
@@ -1401,7 +1401,7 @@
             %         end;
             %     end;
             % end;
-            
+
             %Normalisation specification
             %sqrt(2) for DC and Nyquist normalisation, by default
             lpen = sqrt(2)/sum(LoD_F);
@@ -1458,7 +1458,7 @@
             LoR_F = LoR_F * hpen;
             wvf(1).lift_norm(1) = wvf(1).lift_norm(1) * lpen;
             wvf(1).lift_norm(2) = wvf(1).lift_norm(2) * hpen;
-            
+
             wvf(1).filt_H0 = LoD_F;
             wvf(1).filt_H0_delay = LoD_F_delay;
             wvf(1).filt_H1 = HiD_F;
@@ -1467,7 +1467,7 @@
             wvf(1).filt_G0_delay = LoR_F_delay;
             wvf(1).filt_G1 = HiR_F;
             wvf(1).filt_G1_delay = HiR_F_delay;
-            
+
             function [signal,delay]=signal_add(s1,d1,s2,d2)
                 if (any(s2))
                     mind = min(d1(1),d2(1));
@@ -1487,7 +1487,7 @@
                 signal = sigcum(nz(1):nz(end));
                 delay = (mind + nz(1) - 1):(mind + nz(end) - 1);
             end
-            
+
             function [signal,delay]=signal_mult(s1,d1,s2,d2)
                 mind = min(d1(1),d2(1));
                 maxd = max(d1(end),d2(end));
@@ -1497,7 +1497,7 @@
                 s2ext = zeros(1,totlen);
                 s1ext((d1(1) - mind + 1):(d1(end) - mind + 1)) = s1;
                 s2ext((d2(1) - mind + 1):(d2(end) - mind + 1)) = s2;
-                
+
                 mindelay = 2 * mind; %d1(1) + d2(1);
                 maxdelay = 2 * maxd; %d1(end) + d2(end);
                 sigcum = zeros(1, maxdelay - mindelay + 1);
@@ -1511,7 +1511,7 @@
                 delay = (mindelay + nz(1) - 1):(mindelay + nz(end) - 1);
             end
         end
-        
+
         function [S,Sind] = submatrix(X,Ssiz,Soff)
             %Extracts submatrix from a multidimensional matrix
             %[S,Sind]=submatrix(X,Ssiz,Soff)
@@ -1533,7 +1533,7 @@
             % submatrix of which each dimension is half than in X (with
             % the offset at the first element of X). Then, the function would be called
             % with: S = submatrix(X,ceil(size(X)/2));
-            
+
             if isvector(X)
                 n = 1;
             else
@@ -1548,7 +1548,7 @@
             end;
             S = X(Sind{:});
         end
-        
+
         function [ld,hd,N] = subband_dim(sdim, N)
             %Computes the subband dimensions for a specified number of decompositions
             %[ld,hd,N]=subband_dim(sdim, N)
@@ -1571,12 +1571,12 @@
             %Example:
             % [ld,hd,N]= subband_dim(9, 3); %if upper_limit = 1 -> ld = 2, hd = 1
             % [ld,hd,N]= subband_dim(100, Inf); %for max. number of decompositions
-            
+
             sdim = double(sdim);
             ld = zeros(size(sdim));
             hd = zeros(size(sdim));
             n = zeros(size(sdim));
-            
+
             for d=1:length(sdim)
                 if (sdim(d) == 1) %singleton dimension, skip it!
                     ld(d) = 1;
@@ -1586,12 +1586,12 @@
                     n(d) = sb_dim(sdim(d),N);
                 end;
             end;
-            
+
             N = min(n);
             for d=1:length(sdim)
                 [n(d),ld(d),hd(d)] = sb_dim(sdim(d),N);
             end;
-            
+
             function [i,ld,hd] = sb_dim(sdim,N)
                 ld = sdim;
                 hd = 0;
@@ -1605,7 +1605,7 @@
                 end
             end
         end
-        
+
         function [y] = makepowerof2(x)
             N = length(x);
             y = x;
@@ -1614,7 +1614,7 @@
                 N = N+1;
             end
         end
-        
+
         function draw_packets(D,N,pdep,s,packet_stream)
             %Visualises the wavelet packets decomposition
             %draw_packets(D,N,pdep,s,packet_stream)
@@ -1636,7 +1636,7 @@
             % ent_par=struct('ent','shannon','opt',0);
             % [D,packet_stream,s,E]=decomp_packets2D('lena256.png',par,ent_par);
             % draw_packets(D,par.N,par.pdep,s,packet_stream);
-            
+
             scrsz = get(0,'ScreenSize');
             figure('Name','Wavelet packet structure drawn by bit information');
             pdep=pdep-N+1;
@@ -1703,7 +1703,7 @@
                 end;
                 rectangle('Position',s(i).band_abs,'LineWidth',lw,'EdgeColor','white');
             end;
-            
+
             function cnt=draw_subband(sx,sy,packet_stream,cnt,siz,pdep)
                 cnt=cnt+1;
                 if packet_stream(cnt)
@@ -1742,7 +1742,7 @@
                 end;
             end
         end
-        
+
         function plotSpectogram(wave)
             figure
             imagesc(abs(wave))
