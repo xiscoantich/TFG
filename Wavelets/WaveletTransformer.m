@@ -72,12 +72,14 @@ classdef WaveletTransformer < handle
                     wave(:,:,3) = V;
                     wave(:,:,4) = D;
                 case 'multilevel'
-                    [wave,obj.l] = obj.mlwavelet2(data.signal,data.level,data.motherwave); %Deberia guardar los datos de otra manera
+                    [wave,obj.l] = obj.mlwavelet2(data.signal,data.wave_info.level,data.motherwave); %Deberia guardar los datos de otra manera
                 case 'matlab'
-                    [wave,obj.l] = wavedec2(data.signal,data.level,data.motherwave);
+                    [wave,obj.l] = wavedec2(data.signal,data.wave_info.level,data.motherwave);
+                case 'wavedec'
+                    wave = obj.waveletDecom4Images(data.signal,data.wave_info.level,data.motherwave);
                 case 'packet'
                     [wave,data.wave_info.packet_stream,obj.s,E]=obj.decomp_packets2D(data.signal,data.wave_info.par,data.wave_info.ent_par);
-                    obj.draw_packets(wave,data.wave_info.par.N,data.wave_info.par.pdep,obj.s,obj.packet_stream);
+                    %obj.draw_packets(wave,data.wave_info.par.N,data.wave_info.par.pdep,obj.s,obj.packet_stream);
             end
         end
 
@@ -1194,7 +1196,18 @@ classdef WaveletTransformer < handle
                 end
             end
         end
-
+        
+        function wave = waveletDecom4Images(obj,image,levels,wname)
+            [LoD,HiD] = wfilters(wname,'d');
+            DA = double(image);
+            for i = 1:levels
+                [DA,DH,DV,DD] = obj.waveletDecom(DA,LoD,HiD);
+                siz = size(DA);
+                A=[DA DH; DV DD];
+                D(1:2*siz(1),1:2*siz(2))=A;
+            end
+            wave = D;
+        end
     end
     methods (Access = private, Static)
 
@@ -1748,6 +1761,50 @@ classdef WaveletTransformer < handle
             imagesc(abs(wave))
             xlabel('Time (integer index)')
             ylabel('Scale')
+        end
+        
+        function [cAj1d,cDhd,cDvd,cDdd] = waveletDecom(cAj,LoD,HiD)
+            s = double(cAj);
+            
+            % Compute sizes.
+            [m,n] = size(s);
+            sx = [m n];
+            lf = length(LoD);
+            sizeEXT = lf-1;
+            last = sx+lf-1;
+            first = [2 2];
+            
+            %1st step
+            s = wextend('addcol','sym',s,sizeEXT);
+            n1 = size(s,1);%Rows
+            for i=1:n1 %Same as conv2
+                cAjL(i,:) = conv(s(i,:),LoD,'valid');
+                cAjH(i,:) = conv(s(i,:),HiD,'valid');
+            end
+            
+            %Downsample columns: keep the even-indexed columns.
+            cAjLd = cAjL(:,first(2):2:last(2));
+            cAjHd = cAjH(:,first(2):2:last(2));
+            
+            cAjLd = wextend('addrow','sym',cAjLd,sizeEXT);
+            cAjHd = wextend('addrow','sym',cAjHd,sizeEXT);
+            
+            %2n step
+            n2 = size(cAjLd,2);
+            for i=1:n2 %columns
+                cAj1(:,i) = conv(cAjLd(:,i),LoD,'valid');
+                cDh(:,i) = conv(cAjLd(:,i),HiD,'valid');
+            end
+            for i=1:n2 %columns
+                cDv(:,i) = conv(cAjHd(:,i),LoD,'valid');
+                cDd(:,i) = conv(cAjHd(:,i),HiD,'valid');
+            end
+            
+            %Downsample rows: keep the even-indexed rows.
+            cAj1d = cAj1(first(1):2:last(1),:);
+            cDhd = cDh(first(1):2:last(1),:);
+            cDvd = cDv(first(1):2:last(1),:);
+            cDdd = cDd(first(1):2:last(1),:);
         end
     end
 end
