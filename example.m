@@ -13,9 +13,7 @@ d.ent_par=struct('ent','shannon','opt',0);
 
 a = Data(d);
 
-
-
-e.keep = 0.5;
+e.keep = 0.01;
 e.data = a;
 c = Compressor(e);
 aCompressed = c.computeCompressedSignal();
@@ -66,20 +64,19 @@ switch d.typesignal
         imshow(mat2gray(real(aCompressed.Fourier.signal)));
         colormap;
         %colorbar %Los valores de la leyenda estan escalados entre 0 i 1
-        title(['Fourier:',num2str(e.keep*100),'%'],'FontSize',10);
-        
+        title(['Fourier: keep = ',num2str(e.keep*100),'% mse =', num2str(aCompressed.Fourier.error)],'FontSize',10);
         
         nexttile([2,2]);
         imshow(mat2gray(real(aCompressed.Wavelet.signal)));
         colormap;
         %colorbar %Los valores de la leyenda estan escalados entre 0 i 1
-        title(['Wavelets:',num2str(e.keep*100),'%'],'FontSize',10);
+        title(['Wavelets: keep = ',num2str(e.keep*100),'% mse =', num2str(aCompressed.Wavelet.error)],'FontSize',10);
         
         nexttile([2,2]);
         imshow(mat2gray(real(aCompressed.PCA.signal)));
         colormap;
         %colorbar %Los valores de la leyenda estan escalados entre 0 i 1
-        title(['PCA:',num2str(e.keep*100),'%'],'FontSize',10);
+        title(['PCA: keep = ',num2str(e.keep*100),'% mse =', num2str(aCompressed.PCA.error)],'FontSize',10);
         
         f=figure();
         f.Position(3:4) = [600 250];

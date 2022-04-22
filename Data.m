@@ -15,6 +15,7 @@ classdef Data < handle
         U
         V
         Fs
+        error
         
         %New Wavelet Transformer
         level
@@ -189,7 +190,7 @@ classdef Data < handle
                         obj.dim = cParams.dim;
                         obj.type.ft = cParams.type;
                         obj.originalsize = cParams.originalsize;
-                        obj.computeTimeRepresentationFromFreq();
+                        obj.computeTimeRepresentationFromFreq()
                   
                 case 'WAVELET'
                         obj.wave = cParams.wave;
@@ -354,6 +355,7 @@ classdef Data < handle
                 end
             end
         end
+        
     end
 end
 

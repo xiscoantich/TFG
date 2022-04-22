@@ -45,7 +45,10 @@ classdef Compressor < handle
                 pca.V = Vcut;
                 s = struct('Fourier',Data(fourier),'Wavelet',Data(wavelet),'PCA',Data(pca));
             end
+            
+            obj.computeError(s)
             cData = s;
+            
         end
     end
     
@@ -91,5 +94,16 @@ classdef Compressor < handle
             Scut = S(1:ceil(nx*obj.keep),1:ceil(ny*obj.keep));
             Vcut = V(:,1:ceil(ny*obj.keep));
         end
+        
+        function computeError(obj,s)
+            original = obj.data.signal ;
+            n = length(fieldnames(s));
+            s.Fourier.error = immse(s.Fourier.signal,original);
+            s.Wavelet.error = immse(s.Wavelet.signal, original);
+            if n == 3
+                 s.PCA.error = immse(s.PCA.signal, original);
+            end
+        end
+       
     end
 end
