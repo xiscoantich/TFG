@@ -4,7 +4,7 @@ addpath(genpath(folder));
 d.domain = 'TEMPORAL';
 d.typesignal = 'IMAGE';%'AUDIO';
 d.name = 'cat';%'sinus';
-d.motherwave = 'db5';%'Haar';%'Haar';%'CDF_9x7';
+d.motherwave = 'db5';%''db5';%'Haar';%'Haar';%'CDF_9x7';
 d.type.ft = 'matlab';%'dft';
 d.type.wt = 'wavedec';%'dyadic_decomp';
 d.level=5;

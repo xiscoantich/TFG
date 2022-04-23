@@ -76,10 +76,10 @@ classdef WaveletTransformer < handle
                 case 'matlab'
                     [wave,obj.l] = wavedec2(data.signal,data.wave_info.level,data.motherwave);
                 case 'wavedec'
-                    wave = obj.waveletDecom4Images(data.signal,data.wave_info.level,data.motherwave);
+                    [wave,data.wave_info.s] = obj.waveletDecom4Images(data.signal,data.wave_info.level,data.motherwave);
                 case 'packet'
                     [wave,data.wave_info.packet_stream,obj.s,E]=obj.decomp_packets2D(data.signal,data.wave_info.par,data.wave_info.ent_par);
-                    %obj.draw_packets(wave,data.wave_info.par.N,data.wave_info.par.pdep,obj.s,obj.packet_stream);
+                    %obj.draw_packets(wave,data.wave_info.par.N,data.wave_info.par.pdep,obj.wave_info.s,obj.packet_stream);
             end
         end
 
@@ -115,8 +115,10 @@ classdef WaveletTransformer < handle
                 case 'matlab'
                     signal = waverec2(data.wave,data.wave_info.l,data.motherwave);
                 case 'packet'
-                    signal = recon_packets2D(data.wave,data.wave_info.par,data.wave_info.packet_stream);
+                    signal = obj.recon_packets2D(data.wave,data.wave_info.par,data.wave_info.packet_stream);
                     %signal = obj.recon_packets2D(data.wave,data.wave_info);
+                case 'wavedec'
+                    signal = obj.waveletRec4Images(data.wave, data.wave_info, data.motherwave);
             end
         end
 
@@ -1128,7 +1130,7 @@ classdef WaveletTransformer < handle
             end
         end
 
-        function A=recon_packets2D(obj,D,wavelet_info)
+        function A=recon_packets2D(obj,D,param,packet_stream)
             %2D wavelet packets reconstruction
             %A=recon_packets2D(D,param,packet_stream)
             %
@@ -1148,10 +1150,8 @@ classdef WaveletTransformer < handle
             %Example:
             % [D,packet_stream]=decomp_packets2D(Y,par,ent_par);%see decomp_packets2D.m
             % A=recon_packets2D(D,par,packet_stream);
-
-            param = wavelet_info.par;
-            packet_stream = wavelet_info.packet_stream;
-
+            
+            
             param.pdep=param.pdep-param.N+1; %e.g. if N=5 and pdep=2 -> param.pdep=-2
             if size(packet_stream,2)>1
                 packet_stream=fliplr(packet_stream);
@@ -1176,7 +1176,7 @@ classdef WaveletTransformer < handle
                 D(1:siz(1),1:siz(2))=A;
                 param.pdep=param.pdep+1;
             end
-
+            
             function [band,cnt]=recon_entropy(band,param,packet_stream,cnt)
                 cnt=cnt+1;
                 if packet_stream(cnt)
@@ -1197,16 +1197,28 @@ classdef WaveletTransformer < handle
             end
         end
         
-        function wave = waveletDecom4Images(obj,image,levels,wname)
+        function [c,s] = waveletDecom4Images(obj,image,levels,wname)
             [LoD,HiD] = wfilters(wname,'d');
             DA = double(image);
+            c = [];
+            sx =  size(DA);
+            n = levels;
+            s = zeros(n+2,length(sx));
+            s(end,:) = size(DA);
             for i = 1:levels
                 [DA,DH,DV,DD] = obj.waveletDecom(DA,LoD,HiD);
-                siz = size(DA);
-                A=[DA DH; DV DD];
-                D(1:2*siz(1),1:2*siz(2))=A;
+                c = [DH(:)' DV(:)' DD(:)' c];     % store details
+                s(n+2-i,:) = size(DA);          % store size
             end
-            wave = D;
+            % Last approximation.
+            c = [DA(:)' c];
+            s(1,:) = size(DA);
+        end
+        
+        function rec = waveletRec4Images(obj,c,wave_info,wname)
+            [LoR,HiR] = wfilters(wname,'r');
+            s = wave_info.s;
+            rec = waverec2(c,s,LoR,HiR);
         end
     end
     methods (Access = private, Static)
