@@ -1814,6 +1814,8 @@ classdef WaveletTransformer < handle
             end
             
             %Downsample columns: keep the even-indexed columns.
+%             cAjLd = dyaddown(cAjL,'c');
+%             cAjHd = dyaddown(cAjH,'c');
             cAjLd = cAjL(:,first(2):2:last(2));
             cAjHd = cAjH(:,first(2):2:last(2));
             
@@ -1832,6 +1834,10 @@ classdef WaveletTransformer < handle
             end
             
             %Downsample rows: keep the even-indexed rows.
+%             cAj1d = dyaddown(cAj1,'r');
+%             cDhd = dyaddown(cDh,'r');
+%             cDvd = dyaddown(cDv,'r');
+%             cDdd = dyaddown(cDd,'r');
             cAj1d = cAj1(first(1):2:last(1),:);
             cDhd = cDh(first(1):2:last(1),:);
             cDvd = cDv(first(1):2:last(1),:);
