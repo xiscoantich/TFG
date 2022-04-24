@@ -1216,9 +1216,28 @@ classdef WaveletTransformer < handle
         end
         
         function rec = waveletRec4Images(obj,c,wave_info,wname)
-            [LoR,HiR] = wfilters(wname,'r');
+            [Lo_R,Hi_R] = wfilters(wname,'r');
             s = wave_info.s;
-            rec = waverec2(c,s,LoR,HiR);
+            
+            rmax = size(s,1);
+            nmax = rmax-2;
+            % Initialization.
+            nl   = s(1,1);
+            nc   = s(1,2);
+            if length(s(1,:))<3 , dimFactor = 1; else, dimFactor = 3; end
+            a    = zeros(nl,nc,dimFactor,"like",c);
+            a(:) = c(1:nl*nc*dimFactor);
+            
+            % Iterated reconstruction.
+            rm   = rmax+1;
+            for p=nmax:-1:1
+                [h,v,d] = detcoef2('all',c,s,p);
+                a = upsconv2(a,{Lo_R,Lo_R},s(rm-p,:),'sym',[0,0])+ ... % Approximation.
+                    upsconv2(h,{Hi_R,Lo_R},s(rm-p,:),'sym',[0,0])+ ... % Horizontal Detail.
+                    upsconv2(v,{Lo_R,Hi_R},s(rm-p,:),'sym',[0,0])+ ... % Vertical Detail.
+                    upsconv2(d,{Hi_R,Hi_R},s(rm-p,:),'sym',[0,0]);     % Diagonal Detail.
+            end
+            rec = a;
         end
     end
     methods (Access = private, Static)
