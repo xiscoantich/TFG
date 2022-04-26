@@ -4,16 +4,16 @@ addpath(genpath(folder));
 d.domain = 'TEMPORAL';
 d.typesignal = 'IMAGE';%'AUDIO';
 d.name = 'cat';%'sinus';
-d.motherwave = 'db5';%''db5';%'Haar';%'Haar';%'CDF_9x7';
+d.motherwave = 'Haar';%''db5';%'Haar';%'Haar';%'CDF_9x7';
 d.type.ft = 'matlab';%'dft';
-d.type.wt = 'wavedec';%'dyadic_decomp';
+d.type.wt = 'packet';%'dyadic_decomp';
 d.level=5;
 d.par=struct('N',d.level,'pdep',0,'wvf',d.motherwave,'dec','greedy');
 d.ent_par=struct('ent','shannon','opt',0);
 
 a = Data(d);
 
-e.keep = 0.01;
+e.keep = 0.05;
 e.data = a;
 c = Compressor(e);
 aCompressed = c.computeCompressedSignal();
@@ -100,8 +100,4 @@ end
 
 %%  Errores o cosas a mejorar
 %1. Cuando se hace la stft tambien quiere hacer despues una inversa despues y no deberia
-%2. guardar las reconstrucciones porque no se como hacer para que no se sobre escriban las reconstrucciones ft y la wave
-% Esto tengo que crear un nuevo struct (clase) para cada uno de los metodos de
-% compresion donde se guarde su recuperacion. No guardarlos todos en la
-% misma clase. (Pasar de guardar en rec_f a signal)
 

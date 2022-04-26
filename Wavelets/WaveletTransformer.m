@@ -2,15 +2,15 @@ classdef WaveletTransformer < handle
 
     properties (Access = public)
         type_wt
-        N
-        scale
-        paramout
-        k
-        l
+       % N
+       % scale
+       % paramout
+       % k
+       % l
 
-        packet
-        packet_stream
-        s
+       % packet
+       % packet_stream
+       % s
     end
 
     methods (Access = public)
@@ -64,22 +64,20 @@ classdef WaveletTransformer < handle
         function wave = wt2d(obj,data)
             switch data.type.wt
                 case 'cwt'
-                    [wave,~,obj.scale,~,~, obj.paramout, obj.k] = obj.contwt2(data.signal,data.dt,[],[],[],[],data.motherwave,[]);
+                    [wave,~,data.wave_info.scale,~,~, data.wave_info.paramout, data.wave_info.k] = obj.contwt2(data.signal,data.dt,[],[],[],[],data.motherwave,[]);
                 case 'dwt'
                     [A,H,V,D] = obj.dwt_2D(data.signal,data.motherwave);
                     wave(:,:,1) = A;
                     wave(:,:,2) = H;
                     wave(:,:,3) = V;
                     wave(:,:,4) = D;
-                case 'multilevel'
-                    [wave,obj.l] = obj.mlwavelet2(data.signal,data.wave_info.level,data.motherwave); %Deberia guardar los datos de otra manera
                 case 'matlab'
-                    [wave,obj.l] = wavedec2(data.signal,data.wave_info.level,data.motherwave);
-                case 'wavedec'
+                    [wave,data.wave_info.l] = wavedec2(data.signal,data.wave_info.level,data.motherwave);
+                case {'wavedec', 'multilevel'}
                     [wave,data.wave_info.s] = obj.waveletDecom4Images(data.signal,data.wave_info.level,data.motherwave);
                 case 'packet'
-                    [wave,data.wave_info.packet_stream,obj.s,E]=obj.decomp_packets2D(data.signal,data.wave_info.par,data.wave_info.ent_par);
-                    %obj.draw_packets(wave,data.wave_info.par.N,data.wave_info.par.pdep,obj.wave_info.s,obj.packet_stream);
+                    [wave,data.wave_info.packet_stream,data.wave_info.s,E]=obj.decomp_packets2D(data.signal,data.wave_info.par,data.wave_info.ent_par);
+                    obj.draw_packets(wave,data.wave_info.par.N,data.wave_info.par.pdep,data.wave_info.s,data.wave_info.packet_stream);
             end
         end
 
@@ -102,7 +100,7 @@ classdef WaveletTransformer < handle
 
         function signal = iwt2d(obj,data)
             switch data.type.wt
-                case 'cwt'
+                case 'cwt' %Esta no functiona bien
                     signal = obj.invcwt2(data.wave, data.motherwave, obj.scale, obj.paramout, obj.k);
                 case 'dwt'
                     A = data.wave(:,:,1);
@@ -110,15 +108,13 @@ classdef WaveletTransformer < handle
                     V = data.wave(:,:,3);
                     D = data.wave(:,:,4);
                     signal = obj.idwt_2D(A,H,V,D,data.motherwave);
-                case 'multilevel'
-                    signal = waverec2(data.wave,data.wave_info.l,data.motherwave); %Esta funcion es de matlab y no funciona bien
                 case 'matlab'
                     signal = waverec2(data.wave,data.wave_info.l,data.motherwave);
+                case {'wavedec','multilevel'}
+                    signal = obj.waveletRec4Images(data.wave, data.wave_info, data.motherwave);
                 case 'packet'
                     signal = obj.recon_packets2D(data.wave,data.wave_info.par,data.wave_info.packet_stream);
                     %signal = obj.recon_packets2D(data.wave,data.wave_info);
-                case 'wavedec'
-                    signal = obj.waveletRec4Images(data.wave, data.wave_info, data.motherwave);
             end
         end
 
@@ -178,14 +174,14 @@ classdef WaveletTransformer < handle
         end
 
         function [wave,period,scale,coi, dj, paramout, k] = contwt2(obj,Y,dt,pad,dj,s0,J1,mother,param)
-            m=size(x,2); %columnas
-            for i=1:m
-                [wave(:,:,i),period,scale,coi, dj, paramout, k] = contwt(obj,Y(:,i),dt,pad,dj,s0,J1,mother,param)
-            end
-            n=size(x1,1); %filas
-            for i=1:n
-                y(i,:)=obj.FFT(x1(i,:)); %FFT por filas
-            end
+%             m=size(Y,2); %columnas
+%             for i=1:m
+%                 [wave(:,:,i),period,scale,coi, dj, paramout, k] = contwt(obj,Y(:,i),dt,pad,dj,s0,J1,mother,param)
+%             end
+%             n=size(wave,1); %filas
+%             for i=1:n
+%                 wave(i,:)=obj.FFT(x1(i,:)); %FFT por filas
+%             end
         end
 
         function Xrec = invcwt(obj,wvcfs, mother, scale, param, k)
@@ -264,39 +260,6 @@ classdef WaveletTransformer < handle
                 c = c.';
                 l = l';
             end
-        end
-
-        function [c,s] = mlwavelet2(obj,x,n,wavelet)
-
-            %load the wavelet here
-            if ischar(wavelet)
-                wvf = obj.load_wavelet(wavelet,'E');
-            else
-                wvf = wavelet;
-            end
-
-            if isempty(n)
-                n = wmaxlev(length(x),wavelet);
-            end
-            % Initialization.
-            c = [];
-            sx =  size(x);
-            s = zeros(n+2,length(sx));
-            if isempty(x)
-                c = cast(c,"like",x);
-                return;
-            end
-
-            s(end,:) = size(x);
-            for i=1:n
-                [x,h,v,d] = obj.dwt_2D(x,wvf); % decomposition
-                c = [h(:)' v(:)' d(:)' c];     % store details
-                s(n+2-i,:) = size(x);          % store size
-            end
-
-            % Last approximation.
-            c = [x(:)' c];
-            s(1,:) = size(x);
         end
 
         function [a,d] = dwt_conv1D(obj,x,wvf)
@@ -1199,20 +1162,20 @@ classdef WaveletTransformer < handle
         
         function [c,s] = waveletDecom4Images(obj,image,levels,wname)
             [LoD,HiD] = wfilters(wname,'d');
-            DA = double(image);
+            A = double(image);
             c = [];
-            sx =  size(DA);
+            sx =  size(A);
             n = levels;
             s = zeros(n+2,length(sx));
-            s(end,:) = size(DA);
-            for i = 1:levels
-                [DA,DH,DV,DD] = obj.waveletDecom(DA,LoD,HiD);
-                c = [DH(:)' DV(:)' DD(:)' c];     % store details
-                s(n+2-i,:) = size(DA);          % store size
+            s(end,:) = size(A);
+            for i = 1:n
+                [A,H,V,D] = obj.waveletDecom(A,LoD,HiD);
+                c = [H(:)' V(:)' D(:)' c];     % store details
+                s(n+2-i,:) = size(A);          % store size
             end
             % Last approximation.
-            c = [DA(:)' c];
-            s(1,:) = size(DA);
+            c = [A(:)' c];
+            s(1,:) = size(A);
         end
         
         function rec = waveletRec4Images(obj,c,wave_info,wname)
@@ -1225,19 +1188,19 @@ classdef WaveletTransformer < handle
             nl   = s(1,1);
             nc   = s(1,2);
             if length(s(1,:))<3 , dimFactor = 1; else, dimFactor = 3; end
-            a    = zeros(nl,nc,dimFactor,"like",c);
-            a(:) = c(1:nl*nc*dimFactor);
+            A    = zeros(nl,nc,dimFactor,"like",c);
+            A(:) = c(1:nl*nc*dimFactor);
             
             % Iterated reconstruction.
             rm   = rmax+1;
             for p=nmax:-1:1
-                [h,v,d] = detcoef2('all',c,s,p);
-                a = upsconv2(a,{Lo_R,Lo_R},s(rm-p,:),'sym',[0,0])+ ... % Approximation.
-                    upsconv2(h,{Hi_R,Lo_R},s(rm-p,:),'sym',[0,0])+ ... % Horizontal Detail.
-                    upsconv2(v,{Lo_R,Hi_R},s(rm-p,:),'sym',[0,0])+ ... % Vertical Detail.
-                    upsconv2(d,{Hi_R,Hi_R},s(rm-p,:),'sym',[0,0]);     % Diagonal Detail.
+                [H,V,D] = detcoef2('all',c,s,p);
+                A = upsconv2(A,{Lo_R,Lo_R},s(rm-p,:),'sym',[0,0])+ ... % Approximation.
+                    upsconv2(H,{Hi_R,Lo_R},s(rm-p,:),'sym',[0,0])+ ... % Horizontal Detail.
+                    upsconv2(V,{Lo_R,Hi_R},s(rm-p,:),'sym',[0,0])+ ... % Vertical Detail.
+                    upsconv2(D,{Hi_R,Hi_R},s(rm-p,:),'sym',[0,0]);     % Diagonal Detail.
             end
-            rec = a;
+            rec = A;
         end
     end
     methods (Access = private, Static)
@@ -1682,59 +1645,60 @@ classdef WaveletTransformer < handle
             % draw_packets(D,par.N,par.pdep,s,packet_stream);
 
             scrsz = get(0,'ScreenSize');
-            figure('Name','Wavelet packet structure drawn by bit information');
-            pdep=pdep-N+1;
-            if size(packet_stream,2)>1
-                packet_stream=fliplr(packet_stream);
-            end;
-            cnt=0;
-            set(gca,'YDir','reverse','PlotBoxAspectRatio',[1 1 1],'XTick',[],'YTick',[]);
-            siz=1/(2^N);
-            for i=1:N
-                rectangle('Position',[0,0,siz,siz]);
-                rectangle('Position',[0,siz,siz,siz]);
-                rectangle('Position',[siz,0,siz,siz]);
-                rectangle('Position',[siz,siz,siz,siz]);
-                if pdep>0
-                    cnt=draw_subband(siz,siz,packet_stream,cnt,siz,pdep);
-                    cnt=draw_subband(0,siz,packet_stream,cnt,siz,pdep);
-                    cnt=draw_subband(siz,0,packet_stream,cnt,siz,pdep);
-                end;
-                siz=siz*2;
-                pdep=pdep+1;
-            end;
-            %second plot - drawn by subband structure s (small - convinient for copy/paste)
-            figure('Position',[300 200 200 200],'Name','Wavelet packet structure drawn by ''s'' subband structure');
-            set(gca,'YDir','reverse','PlotBoxAspectRatio',[1 1 1],'XTick',[],'YTick',[],'Position',[0.005 0.005 0.99 0.99]);
-            axis([0 size(D,2) 0 size(D,1)]);
-            wavelet_dec_bands=N*3+1;
-            for i=1:size(s,2)
-                if i<=wavelet_dec_bands
-                    lw=2;
-                else
-                    lw=1;
-                end;
-                rectangle('Position',s(i).band_abs,'LineWidth',lw);
-            end;
-            %third plot - drawn by subband structure s, with linked subbands
-            %figure('Position',[1 scrsz(4)/2 scrsz(3)/2 scrsz(4)/2])
-            figure('Position',[scrsz(3)/2-3*scrsz(4)/8 scrsz(4)/2-3*scrsz(4)/8 6*scrsz(4)/8 6*scrsz(4)/8],...
-                'Name','Wavelet packet structure drawn by s - subabnd structure');
-            set(gca,'YDir','reverse','PlotBoxAspectRatio',[1 1 1],'XTick',[],'YTick',[],'Position',[0.005 0.005 0.99 0.99]);
-            axis([0 size(D,2) 0 size(D,1)]);
-            wavelet_dec_bands=N*3+1;
-            for i=1:size(s,2)
-                if i<=wavelet_dec_bands
-                    lw=2;
-                else
-                    lw=1;
-                end;
-                rectangle('Position',s(i).band_abs,'LineWidth',lw);
-            end;
-            cmap=colormap('prism');
-            lv=1;
-            link_subbands(s(1),s,cmap,lv);
-            %and finally draw decomposed subbands
+            %% First plot
+%             figure('Name','Wavelet packet structure drawn by bit information');
+%             pdep=pdep-N+1;
+%             if size(packet_stream,2)>1
+%                 packet_stream=fliplr(packet_stream);
+%             end;
+%             cnt=0;
+%             set(gca,'YDir','reverse','PlotBoxAspectRatio',[1 1 1],'XTick',[],'YTick',[]);
+%             siz=1/(2^N);
+%             for i=1:N
+%                 rectangle('Position',[0,0,siz,siz]);
+%                 rectangle('Position',[0,siz,siz,siz]);
+%                 rectangle('Position',[siz,0,siz,siz]);
+%                 rectangle('Position',[siz,siz,siz,siz]);
+%                 if pdep>0
+%                     cnt=draw_subband(siz,siz,packet_stream,cnt,siz,pdep);
+%                     cnt=draw_subband(0,siz,packet_stream,cnt,siz,pdep);
+%                     cnt=draw_subband(siz,0,packet_stream,cnt,siz,pdep);
+%                 end;
+%                 siz=siz*2;
+%                 pdep=pdep+1;
+%             end;
+            %% Second plot - drawn by subband structure s (small - convinient for copy/paste)
+%             figure('Position',[300 200 200 200],'Name','Wavelet packet structure drawn by ''s'' subband structure');
+%             set(gca,'YDir','reverse','PlotBoxAspectRatio',[1 1 1],'XTick',[],'YTick',[],'Position',[0.005 0.005 0.99 0.99]);
+%             axis([0 size(D,2) 0 size(D,1)]);
+             wavelet_dec_bands=N*3+1;
+%             for i=1:size(s,2)
+%                 if i<=wavelet_dec_bands
+%                     lw=2;
+%                 else
+%                     lw=1;
+%                 end;
+%                 rectangle('Position',s(i).band_abs,'LineWidth',lw);
+%             end;
+            %% Third plot - drawn by subband structure s, with linked subbands
+%             %figure('Position',[1 scrsz(4)/2 scrsz(3)/2 scrsz(4)/2])
+%             figure('Position',[scrsz(3)/2-3*scrsz(4)/8 scrsz(4)/2-3*scrsz(4)/8 6*scrsz(4)/8 6*scrsz(4)/8],...
+%                 'Name','Wavelet packet structure drawn by s - subabnd structure');
+%             set(gca,'YDir','reverse','PlotBoxAspectRatio',[1 1 1],'XTick',[],'YTick',[],'Position',[0.005 0.005 0.99 0.99]);
+%             axis([0 size(D,2) 0 size(D,1)]);
+%             wavelet_dec_bands=N*3+1;
+%             for i=1:size(s,2)
+%                 if i<=wavelet_dec_bands
+%                     lw=2;
+%                 else
+%                     lw=1;
+%                 end;
+%                 rectangle('Position',s(i).band_abs,'LineWidth',lw);
+%             end;
+%             cmap=colormap('prism');
+%             lv=1;
+%             link_subbands(s(1),s,cmap,lv);
+            %% and finally draw decomposed subbands
             figure('Name','Wavelet packet transform coefficients');
             set(gca,'YDir','reverse','PlotBoxAspectRatio',[1 1 1],'XTick',[],'YTick',[]);
             axis([0 size(D,2) 0 size(D,1)]);
@@ -1794,7 +1758,7 @@ classdef WaveletTransformer < handle
             ylabel('Scale')
         end
         
-        function [cAj1d,cDhd,cDvd,cDdd] = waveletDecom(cAj,LoD,HiD)
+        function [A,H,V,D] = waveletDecom(cAj,LoD,HiD)
             s = double(cAj);
             
             % Compute sizes.
@@ -1838,10 +1802,10 @@ classdef WaveletTransformer < handle
 %             cDhd = dyaddown(cDh,'r');
 %             cDvd = dyaddown(cDv,'r');
 %             cDdd = dyaddown(cDd,'r');
-            cAj1d = cAj1(first(1):2:last(1),:);
-            cDhd = cDh(first(1):2:last(1),:);
-            cDvd = cDv(first(1):2:last(1),:);
-            cDdd = cDd(first(1):2:last(1),:);
+            A = cAj1(first(1):2:last(1),:);
+            H = cDh(first(1):2:last(1),:);
+            V = cDv(first(1):2:last(1),:);
+            D = cDd(first(1):2:last(1),:);
         end
     end
 end

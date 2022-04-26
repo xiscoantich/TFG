@@ -18,9 +18,9 @@ classdef Data < handle
         error
         
         %New Wavelet Transformer
-        level
-        par
-        ent_par
+        %level
+        %par
+        %ent_par
     end
      
     properties (Access = private)
@@ -286,11 +286,11 @@ classdef Data < handle
             s.data = obj;
             wt = WaveletTransformer();
             [obj.wave] = wt.directTransform(s);
-            obj.wave_info.N = wt.N;
-            obj.wave_info.scale = wt.scale;
-            obj.wave_info.paramout = wt.paramout;
-            obj.wave_info.k = wt.k;
-            obj.wave_info.l = wt.l;
+%             obj.wave_info.N = wt.N;
+%             obj.wave_info.scale = wt.scale;
+%             obj.wave_info.paramout = wt.paramout;
+%             obj.wave_info.k = wt.k;
+%             obj.wave_info.l = wt.l;
         end
         
         function computePCARepresentation(obj)
