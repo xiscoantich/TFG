@@ -77,7 +77,7 @@ classdef WaveletTransformer < handle
                     [wave,data.wave_info.s] = obj.waveletDecom4Images(data.signal,data.wave_info.level,data.motherwave);
                 case 'packet'
                     [wave,data.wave_info.packet_stream,data.wave_info.s,E]=obj.decomp_packets2D(data.signal,data.wave_info.par,data.wave_info.ent_par);
-                    obj.draw_packets(wave,data.wave_info.par.N,data.wave_info.par.pdep,data.wave_info.s,data.wave_info.packet_stream);
+                    %obj.draw_packets(wave,data.wave_info.par.N,data.wave_info.par.pdep,data.wave_info.s,data.wave_info.packet_stream);
             end
         end
 
