@@ -66,7 +66,21 @@ end
 
 function plot_mesh (Img)
 figure
-surf(Img(10:10:end,10:10:end))
+N = 1;
+dgre = linspace(90,0,N); 
+for i=1:N
+    s = surf(mat2gray(Img(10:10:end,10:10:end)));
+    s.EdgeColor = 'interp';
+    s.FaceColor = 'interp';
+    colormap('gray');
+    %view(160,dgre(i))
+    set(gca,'XTick',[], 'YTick', [], 'ZTick', [])
+    axis on;
+    grid off
+%     filename = strcat('surfaceCat-',num2str(i),'.png');
+%     saveas(s,filename)
+    pause(.1)
+end
 end
 
 %% FFT test

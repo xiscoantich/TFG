@@ -33,7 +33,7 @@ figure
 plot (y1*100,msr.fourier,'DisplayName','Fourier');
 hold on;
 plot (y1*100,msr.wavelet,'DisplayName','Wavelet');
-%plot (y1*100,msr.pca,'DisplayName','PCA');
+plot (y1*100,msr.pca,'DisplayName','PCA');
 xlabel('keep[%]')
 ylabel('mse')
 legend

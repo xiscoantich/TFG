@@ -96,6 +96,33 @@ classdef FourierTransformer < handle
               y = wextend('1D','sym',y,extension);
         end
         
+        function y = makedivisibleby8 (obj,x)
+            N = size(x);
+            
+            if mod(N(1),2) ~= 0
+                y(end+1,:)=y(end,:);
+                N(1)=N(1)+1;
+            end
+            if mod(N(2),2) ~= 0
+                y(:,end+1)=y(:,end);
+                N(2)=N(2)+1;
+            end
+            
+            b1=0;
+            b2=0;
+            if rem(N(1),8)~= 0
+            b1 = N(1) + (8 - rem(N(1),8));
+            b1 = b1-N(1);
+            end
+            if rem(N(2),8) ~= 0
+            b2 = N(2) + (8 - rem(N(2),8));
+            b2 = b2-N(2);
+            end
+            x1 = wextend('addrow','zpd',x,b1/2);
+            y = wextend('addcol','zpd',x1,b2/2);
+            
+        end
+        
         function y = dft(obj,x)
             n = length(x);
             y = NaN(size(x));
@@ -181,6 +208,97 @@ classdef FourierTransformer < handle
             obj.plotSpectogram(S,L,N,M);
         end
         
+        function y = dct_8by8(obj,x)
+            y = blockproc(x,[8 8],@(blkStruct) dct2(blkStruct.data));
+            %y = blockproc(x,[8 8],@(blkStruct) obj.dct_8x8(blkStruct.data));
+            imshow(y)
+            
+%             T = dctmtx(8);
+%             dct = @(block_struct) T * block_struct.data * T';
+%             y = blockproc(x,[8 8],dct);
+%             imshow(y)
+        end
+        
+        function y = idct_8by8(obj,x)
+            y = blockproc(x,[8 8],@(blkStruct) idct2(blkStruct.data));
+            
+%             mask = [1   1   1   1   0   0   0   0
+%                 1   1   1   0   0   0   0   0
+%                 1   1   0   0   0   0   0   0
+%                 1   0   0   0   0   0   0   0
+%                 0   0   0   0   0   0   0   0
+%                 0   0   0   0   0   0   0   0
+%                 0   0   0   0   0   0   0   0
+%                 0   0   0   0   0   0   0   0];
+%             B2 = blockproc(x,[8 8],@(block_struct) mask .* block_struct.data);
+%             T = dctmtx(8);
+%             invdct = @(block_struct) T' * block_struct.data * T;
+%             y = blockproc(B2,[8 8],invdct);
+%             imshow(mat2gray(y));
+        end
+        
+        function O = dct_8x8(obj,I) %No esta implementada
+            cosines = [1.0000  1.0000  1.0000  1.0000  1.0000  1.0000  1.0000  1.0000
+                0.9808  0.8315  0.5556  0.1951 -0.1951 -0.5556 -0.8315 -0.9808
+                0.9239  0.3827 -0.3827 -0.9239 -0.9239 -0.3827  0.3827  0.9239
+                0.8315 -0.1951 -0.9808 -0.5556  0.5556  0.9808  0.1951 -0.8315
+                0.7071 -0.7071 -0.7071  0.7071  0.7071 -0.7071 -0.7071  0.7071
+                0.5556 -0.9808  0.1951  0.8315 -0.8315 -0.1951  0.9808 -0.5556
+                0.3827 -0.9239  0.9239 -0.3827 -0.3827  0.9239 -0.9239  0.3827
+                0.1951 -0.5556  0.8315 -0.9808  0.9808 -0.8315  0.5556 -0.1951];
+            alpha = [0.1250  0.1768  0.1768  0.1768  0.1768  0.1768  0.1768  0.1768
+                0.1768  0.2500  0.2500  0.2500  0.2500  0.2500  0.2500  0.2500
+                0.1768  0.2500  0.2500  0.2500  0.2500  0.2500  0.2500  0.2500
+                0.1768  0.2500  0.2500  0.2500  0.2500  0.2500  0.2500  0.2500
+                0.1768  0.2500  0.2500  0.2500  0.2500  0.2500  0.2500  0.2500
+                0.1768  0.2500  0.2500  0.2500  0.2500  0.2500  0.2500  0.2500
+                0.1768  0.2500  0.2500  0.2500  0.2500  0.2500  0.2500  0.2500
+                0.1768  0.2500  0.2500  0.2500  0.2500  0.2500  0.2500  0.2500];
+            O = double(zeros(8,8));
+            for p = 1 : 8
+                for q = 1 : 8
+                    s = double(0);
+                    for m = 1 : 8
+                        for n = 1 : 8
+                            s = s + (double(I(m,n)) * cosines(p,m) * cosines(q,n));
+                        end
+                    end
+                    O(p,q) = alpha(p,q) * s;
+                end
+            end
+        end
+        
+        function O = idct_8x8(obj,I) %No esta implementada
+            cosines = [1.0000  1.0000  1.0000  1.0000  1.0000  1.0000  1.0000  1.0000
+                0.9808  0.8315  0.5556  0.1951 -0.1951 -0.5556 -0.8315 -0.9808
+                0.9239  0.3827 -0.3827 -0.9239 -0.9239 -0.3827  0.3827  0.9239
+                0.8315 -0.1951 -0.9808 -0.5556  0.5556  0.9808  0.1951 -0.8315
+                0.7071 -0.7071 -0.7071  0.7071  0.7071 -0.7071 -0.7071  0.7071
+                0.5556 -0.9808  0.1951  0.8315 -0.8315 -0.1951  0.9808 -0.5556
+                0.3827 -0.9239  0.9239 -0.3827 -0.3827  0.9239 -0.9239  0.3827
+                0.1951 -0.5556  0.8315 -0.9808  0.9808 -0.8315  0.5556 -0.1951];
+            alpha = [0.1250  0.1768  0.1768  0.1768  0.1768  0.1768  0.1768  0.1768
+                0.1768  0.2500  0.2500  0.2500  0.2500  0.2500  0.2500  0.2500
+                0.1768  0.2500  0.2500  0.2500  0.2500  0.2500  0.2500  0.2500
+                0.1768  0.2500  0.2500  0.2500  0.2500  0.2500  0.2500  0.2500
+                0.1768  0.2500  0.2500  0.2500  0.2500  0.2500  0.2500  0.2500
+                0.1768  0.2500  0.2500  0.2500  0.2500  0.2500  0.2500  0.2500
+                0.1768  0.2500  0.2500  0.2500  0.2500  0.2500  0.2500  0.2500
+                0.1768  0.2500  0.2500  0.2500  0.2500  0.2500  0.2500  0.2500];
+            O = double(zeros(8,8));
+            for m = 1 : 8
+                for n = 1 : 8
+                    s = double(0);
+                    for p = 1 : 8
+                        for q = 1 : 8
+                            s = s + (alpha(p,q) * double(I(p,q)) * cosines(p,m) * cosines(q,n));
+                        end
+                    end
+                    O(m,n) = s;
+                end
+            end
+        end
+        
         function y = FFT2 (obj,x)
             switch obj.type_ft
                 case 'matlab'
@@ -194,6 +312,11 @@ classdef FourierTransformer < handle
                     for i=1:n
                         y(i,:)=obj.FFT(x1(i,:)); %FFT por filas
                     end
+                case 'dct_8by8'
+                    x = obj.makedivisibleby8(x);
+                    y = obj.dct_8by8(x);
+                case 'dct'
+                    y = dct2(x);
             end
         end
             
@@ -290,8 +413,18 @@ classdef FourierTransformer < handle
 %             for i=1:m
 %                 y(i,:)=obj.IFFT(x1(i,:)); %FFT por columnas
 %             end
-            y = ifft2(x);
-            
+            switch obj.type_ft
+                case 'dct'
+                    y = idct2(x);
+                    
+                case 'dct_8by8'
+                    y = obj.idct_8by8(x);
+                    
+                otherwise
+                    y = ifft2(x);
+                    
+                
+            end
         end
         
     end

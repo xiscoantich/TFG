@@ -186,7 +186,7 @@ end
 function plot_signal_1 (x, t)
 plot(t,x,'LineWidth',1);
 xlabel ('time [s]');
-ylabel ('g(t)');
+ylabel ('x(t)');
 ylim([min(x)-(abs(max(x))*0.1) 1.1*max(x)])
 xlim([0 t(end)])
 grid on;
@@ -201,7 +201,7 @@ xticklabels(ax1,{})
 
 ax2=nexttile(5,[1 2]);
 plot(t2,x2_1,'LineWidth',1);
-ylabel ('g1(t)');
+ylabel ('x1(t)');
 grid on;
 xticklabels(ax2,{})
 
@@ -209,7 +209,7 @@ nexttile(9,[1 2])
 plot(t2,x2_2,'LineWidth',1);
 grid on;
 xlabel ('time [s]');
-ylabel ('g2(t)');
+ylabel ('x2(t)');
 end
 
 function plot_wraping (x, wf, t)
@@ -221,7 +221,7 @@ function plot_wraping (x, wf, t)
     plot(real(x2), imag(x2));
     ylim([-1.1*max(x) 1.1*max(x)])
     xlim([-1.1*max(x) 1.1*max(x)])
-    title(['f = ',num2str(wf(i)),'cycles/s'])
+    title(['f = ',num2str(wf(i)),'cycle/s'])
     grid on
     end
 end
@@ -326,7 +326,7 @@ for n=0:1:N-1
 end
 plot(t,real(x_rec),'LineWidth',1);
 xlabel ('time [s]');
-ylabel ('g(t)');
+ylabel ('x(t)');
 grid on;
 
 end

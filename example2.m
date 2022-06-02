@@ -4,7 +4,7 @@ addpath(genpath(folder));
 d.type = 'TEMPORAL';
 d.name = 'cat.jpg';
 d.motherwave = 'MORLET';
-d.type_ft = 'matlab';
+d.type_ft = 'dct_8by8';
 
 a = Data(d);
 

@@ -115,7 +115,7 @@ classdef Data < handle
             if (nargin < 2) || isempty(mode), mode = 'square'; end
             
             C = obj.wave;
-            S = obj.wave_info.l;
+            %S = obj.wave_info.l;
             wavelet = obj.motherwave;
             level = obj.level;
             
@@ -171,6 +171,7 @@ classdef Data < handle
                         case 'IMAGE'
                             obj.loadImage();
                             obj.dim = 2;
+                
                         case 'VIDEO'
                             obj.loadVideo()
                             obj.dim = 3;
@@ -241,7 +242,7 @@ classdef Data < handle
             end
         end
 
-        function  loadImage(obj)
+        function loadImage(obj)
             switch obj.name
                 case 'test'
                     obj.signal = magic(8);
@@ -250,6 +251,8 @@ classdef Data < handle
                     imagepath=fullfile(path0,'Images',[obj.name,'.jpg']);
                     A = imread(imagepath);
                     obj.signal=double(rgb2gray(A));
+                    
+                    
             end
         end
         

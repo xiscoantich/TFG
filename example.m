@@ -4,16 +4,16 @@ addpath(genpath(folder));
 d.domain = 'TEMPORAL';
 d.typesignal = 'IMAGE';%'AUDIO';
 d.name = 'cat';%'sinus';
-d.motherwave = 'Haar';%''db5';%'Haar';%'Haar';%'CDF_9x7';
-d.type.ft = 'matlab';%'dft';
-d.type.wt = 'packet';%'dyadic_decomp';
-d.level=5;
+d.motherwave = 'db5';%''db5';%'Haar';%'Haar';%'CDF_9x7';
+d.type.ft = 'dct_8by8';%'dft';
+d.type.wt = 'wavedec';%'dyadic_decomp';
+d.level=2;
 d.par=struct('N',d.level,'pdep',0,'wvf',d.motherwave,'dec','greedy');
 d.ent_par=struct('ent','shannon','opt',0);
 
 a = Data(d);
 
-e.keep = 0.05;
+e.keep = 0.1;
 e.data = a;
 c = Compressor(e);
 aCompressed = c.computeCompressedSignal();
@@ -88,13 +88,24 @@ switch d.typesignal
         title(['Fourier coefficients:',num2str(e.keep*100),'%'],'FontSize',10);
         
         nexttile;
-        plotWaveCoef2(a)
+        %plotWaveCoef2(a)
 %         Coef_wt=[aCompressed.Wavelet.wave(:,:,1),aCompressed.Wavelet.wave(:,:,2);
 %                  aCompressed.Wavelet.wave(:,:,3),aCompressed.Wavelet.wave(:,:,4)];      
 %         img=mat2gray(Coef_wt);
 %         imshow(img);
 %         title(['Wavelets coefficients:',num2str(e.keep*100),'%'],'FontSize',10);
-               
+        
+        f=figure();
+        f.Position = [0 0 600 250];
+        t = tiledlayout(1,2,'TileSpacing','tight','Padding','tight');
+        nexttile
+        imshow(mat2gray(a.signal));
+        title(['Original'],'FontSize',10);
+        nexttile;
+        imagesc(a.freq);
+        imshow(mat2gray(log(abs(a.freq)+1)));
+        title(['DCT coefficients'],'FontSize',10);
+
 end
 
 
