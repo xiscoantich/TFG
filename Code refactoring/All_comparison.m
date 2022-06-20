@@ -1,63 +1,51 @@
 %All comparison
 
 in.typesignal = 'image'; % image or audio
-in.filename = 'cat2.jpg'; %name of the file
-
+in.filename = 'cat.jpg'; %name of the file
 data1 = Data(in);
-
 figure();
 set(gcf,'position',[0,0,680,3*440])
 t1 = tiledlayout(3,3,'TileSpacing','compact','Padding','tight');
 
-for i = [0.15 0.1 0.05]
-c.keep = i;
-c.method = 'threshold';
-
-%Matlab
+%Fourier
 in.transtype = 'Fourier';
 in.transmethod = 'dct_8by8'; 
 t1 = Transformer(data1, in);
-c_1 = Compressor(t1,c);
-c_1.computeErr(data1);
-
-%Packet
+%Wavelet
 in.transtype = 'Wavelet';
 in.transmethod = 'packet'; 
 in.winfo.motherwave = 'Haar';%''db5';%'Haar';%'Haar';%'CDF_9x7';
 t2 = Transformer(data1, in);
-c_2 = Compressor(t2,c);
-c_2.computeErr(data1);
-
 %PCA
 in.transtype = 'PCA';
 in.transmethod = ''; 
 t3 = Transformer(data1, in);
+
+for i = [0.15 0.1 0.05]
+c.keep = i;
+c.method = 'threshold';
+%Fourier
+c_1 = Compressor(t1,c);
+c_1.computeErr(data1);
+%Wavelet
+c_2 = Compressor(t2,c);
+c_2.computeErr(data1);
+%PCA
 c_3 = Compressor(t3,c);
 c_3.computeErr(data1);
 
-
-
-%% Plot
-
-%colorbar
-
+% Plot
 nexttile;
 imshow(mat2gray(real(c_1.rec)));
 colormap;
-%colorbar %Los valores de la leyenda estan escalados entre 0 i 1
 title(['JPEG: [',num2str(c.keep*100),'%] MSSIM =', num2str(c_1.err.mssim)],'FontSize',7);
-
 nexttile;
 imshow(mat2gray(real(c_2.rec)));
 colormap;
-%colorbar %Los valores de la leyenda estan escalados entre 0 i 1
-title(['Packet decom: [',num2str(c.keep*100),'%] MSSIM =', num2str(c_2.err.mssim)],'FontSize',7);
-
+title(['Lifting scheme: [',num2str(c.keep*100),'%] MSSIM =', num2str(c_2.err.mssim)],'FontSize',7);
 nexttile;
 imshow(mat2gray(real(c_3.rec)));
 colormap;
-%colorbar %Los valores de la leyenda estan escalados entre 0 i 1
-
 title(['PCA: [',num2str(c.keep*100),'%] MSSIM =', num2str(c_3.err.mssim)],'FontSize',7);
 end
 
@@ -144,7 +132,7 @@ t1 = tiledlayout(1,2,'TileSpacing','compact','Padding','tight');
 nexttile
 plot (y1*100,err1.ft,'DisplayName','JPEG');
 hold on;
-plot (y1*100,err1.wt,'DisplayName','Packet decom');
+plot (y1*100,err1.wt,'DisplayName','Lifting scheme');
 plot (y1*100,err1.pca,'DisplayName','PCA');
 title('Image a)');
 xlabel('Compression [%]')
@@ -155,7 +143,7 @@ hold off
 nexttile
 plot (y1*100,err2.ft,'DisplayName','JPEG');
 hold on;
-plot (y1*100,err2.wt,'DisplayName','Packet decom');
+plot (y1*100,err2.wt,'DisplayName','Lifting scheme');
 plot (y1*100,err2.pca,'DisplayName','PCA');
 title('Image b)');
 xlabel('Compression [%]')
@@ -218,7 +206,7 @@ nexttile;
 imshow(mat2gray(real(c_2.rec)));
 colormap;
 %colorbar %Los valores de la leyenda estan escalados entre 0 i 1
-title(['Packet decom: [',num2str(c2.keep*100),'%] MSSIM =', num2str(c_2.err.mssim)],'FontSize',7);
+title(['Lifting scheme: [',num2str(c2.keep*100),'%] MSSIM =', num2str(c_2.err.mssim)],'FontSize',7);
 
 % nexttile;
 % imshow(mat2gray(real(c_3.rec)));

@@ -1,12 +1,13 @@
 classdef FourierTransformer < handle
     properties (Access = public)
-        transtype
-        transmethod
         freq
         originalsize
+        transtype
+        transmethod
     end
     
     properties (Access = private)
+        
         
     end
     
@@ -17,17 +18,17 @@ classdef FourierTransformer < handle
         
         function obj = directTransform(obj,data)
             obj.originalsize = size(data.signal);
-            if ndims(data.signal) == 1
+            if size(data.signal,2) == 1
                 obj.freq = obj.FFT(obj,data.signal);
-            elseif ndims(data.signal) == 2
+            elseif size(data.signal,2) ~= 1
                 obj.freq = obj.FFT2(obj,data.signal);
             end
         end
         
         function rec = inverseTransform(obj,data)
-            if size(obj.originalsize,2) == 1
+            if obj.originalsize(2) == 1
                 rec = real(obj.IFFT(obj,data));
-            elseif size(obj.originalsize,2) == 2
+            elseif obj.originalsize(2) ~= 2
                 rec = real(obj.IFFT2(obj,data));
             end
         end
@@ -379,6 +380,30 @@ classdef FourierTransformer < handle
                     O(m,n) = s;
                 end
             end
+        end
+        
+        function y = idft(obj,X)    %iDFT  function
+            N = max(size(X));
+            Wm = exp(1i*2*pi/N);
+            y = nan(1,N);
+            int = nan(1,N);
+            for k = 0:N-1
+                for x = 0:N-1
+                    int(x+1) = Wm^(x*k)*X(x+1);
+                end
+                y(k+1) = real(sum(int));
+            end
+            y = y/length(y);
+        end
+        
+        function y = ifft_FFT(obj,x)
+            %  Codigo basado en la demostracion de este link:
+            %  https://adamsiembida.com/how-to-compute-the-ifft-using-only-the-forward-fft/
+            %Este codigo utiliza la funcion FFT, por lo que utiliza el caso que este
+            %seleccionado
+            x = obj.makepowerof2(x);
+            N = length(x);
+            y = real((1/N)*conj(fft(conj(x))));
         end
     end
 end

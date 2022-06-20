@@ -253,7 +253,7 @@ freq = Fs*(0:(length(x)/2))/length(x);
 % freq = 0:Fs/(length(x)):Fs-Fs/length(x); %Esto da mal
 plot(freq,abs(xdft_cut),'r','LineWidth',1);
 xlabel('f [Hz]');
-legend('My code ft','Matlab fft');
+legend('Own code','Matlab fft');
 hold off;
 end
 

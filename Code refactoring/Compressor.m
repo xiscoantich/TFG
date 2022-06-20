@@ -1,16 +1,15 @@
 classdef Compressor < handle
     
-    properties (Access = public)
-        keep
-        method
-        data
-        cut
+    properties (Access = public)   
         rec
         err
     end
     
     properties (Access = private)
-
+        data
+        keep  
+        cut
+        method
     end
     
     methods (Access = public)
@@ -248,14 +247,36 @@ classdef Compressor < handle
                             mask(1:n, 1:n) = B; 
                                 
                             cut = blockproc(obj.data.freq,[8 8],@(block_struct) mask .* block_struct.data);
-                            
+                          
                         otherwise
+%                             %No se porque no funciona
+%                             %Create circle
+%                             imageSizeX= obj.data.originalsize(1);
+%                             imageSizeY= obj.data.originalsize(2);
+%                             [columnsInImage, rowsInImage] = meshgrid(1:imageSizeX, 1:imageSizeY);
+%                             % Next create the circle in the image.
+%                             centerX = imageSizeX / 2; % Wherever you want.
+%                             centerY = imageSizeY / 2;
+%                             npixels = obj.keep*imageSizeX*imageSizeY/2;
+%                             radius = round(sqrt(npixels/pi));
+%                             circlePixels = (rowsInImage - centerY).^2 + (columnsInImage - centerX).^2 <= radius.^2;
+%                             cutshift = (fftshift(obj.data.freq))*double(circlePixels);
+%                             cut = ifftshift(cutshift);
                             cprintf('err', 'typesignal err:  mask only avaliable for dct_8by8  \n');
+                            
                     end
                 case 'Wavelet'
                     cprintf('err', 'typesignal err:  mask only avaliable for dct_8by8  \n');
                 case 'PCA'
                     cprintf('err', 'typesignal err:  mask only avaliable for dct_8by8  \n');
+            end
+            
+            function circlePixels = createCircle()
+                %Create a logical image of a circle with specified
+                % diameter, center, and image size.
+                % First create the image.
+                
+                
             end
         end
         
@@ -279,18 +300,18 @@ classdef Compressor < handle
         end
         
         function cutOriginalSize(obj)
-            if size(obj.data.originalsize,2) ==1
+            if obj.data.originalsize(2) == 1
                 n = size(obj.rec);
                 n0 = obj.data.originalsize;
                 if mod(n0,2)~=0
-                    obj.rec = obj.rec(end-1);
+                    obj.rec = obj.rec(1:end-1);
                     n0 = n0-1;
                 end
                 if n0 ~= n(1)
-                    ncut = (n-n0)/2;
+                    ncut = floor((n-n0)/2);
                     obj.rec = obj.rec(1+ncut:end-ncut);
                 end
-            elseif size(obj.data.originalsize,2) == 2
+            elseif obj.data.originalsize(2) ~= 1
                 n = size(obj.rec);
                 n0 = obj.data.originalsize;
                 if mod(n0(1),2)~=0
@@ -311,6 +332,7 @@ classdef Compressor < handle
                 end
             end
         end
+        
         
        
             

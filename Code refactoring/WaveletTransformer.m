@@ -5,6 +5,9 @@ classdef WaveletTransformer < handle
         wave
         originalsize
         winfo
+        scale
+        paramout
+        k
     end
     
     properties (Access = private)
@@ -18,17 +21,17 @@ classdef WaveletTransformer < handle
         
         function obj = directTransform(obj,data)
             obj.originalsize = size(data.signal);
-            if ndims(data.signal) == 1
+            if size(data.signal,2) == 1
                 obj.wt1D(obj,data.signal);
-            elseif ndims(data.signal) == 2
+            elseif size(data.signal,2) ~= 1
                 obj.wt2D(obj,data.signal);
             end
         end
         
         function rec = inverseTransform(obj,data)
-            if size(obj.originalsize,2) == 1
+            if obj.originalsize(2) == 1
                 rec = obj.iwt1D(obj,data);
-            elseif size(obj.originalsize,2) == 2
+            elseif obj.originalsize(2) ~= 2
                 rec = obj.iwt2D(obj,data);
             end
         end
@@ -45,20 +48,20 @@ classdef WaveletTransformer < handle
     
     methods (Access = private, Static)
         function  wt1D(obj,data)
-            switch data.type.wt
+            switch obj.transmethod
                 case 'cwt'
-                    [obj.wave,~,obj.scale,~,~,obj.paramout, obj.k] = obj.contwt(data.signal,data.dt,[],[],[],[],data.motherwave,[]);
+                    obj.winfo.dt = 1;
+                    [obj.wave,~,obj.winfo.scale,~,~,obj.winfo.paramout, obj.winfo.k] = obj.contwt(data,obj.winfo.dt,[],[],[],[],obj.winfo.motherwave,[]);
                     obj.plotSpectogram(obj.wave)
                 case 'convolution'
-                    [obj.wave(:,1),wave(:,2)] = obj.dwt_conv1D(data.signal,data.motherwave);
+                    [obj.wave(:,1),obj.wave(:,2)] = obj.dwt_conv1D(data,obj.winfo.motherwave);
                 case 'lifting'
-                    [obj.wave(:,1),obj.wave(:,2)] = obj.dwt_lifting1D(data.signal,data.motherwave);
-                case 'dyadic_decomp' %Esta no se si la deberia eliminar
-                    [obj.wave,obj.N] = obj.dwt_dyadic_decomp(data.signal,data.motherwave,obj.N);
+                    [obj.wave(:,1),obj.wave(:,2)] = obj.dwt_lifting1D(data,obj.winfo.motherwave);
                 case 'multilevel'
-                    [obj.wave,obj.l] = obj.mlwavelet(data.signal,data.wave_info.level,data.motherwave);
+                    [obj.wave,obj.l] = obj.mlwavelet(data,obj.winfo.L,obj.winfo.motherwave);
                 case 'matlab'
-                    [obj.wave,obj.l] = wavedec(data.signal,data.wave_info.level,data.motherwave);
+                    obj.winfo.L = wmaxlev(size(data),obj.winfo.motherwave);
+                    [obj.wave,obj.l] = wavedec(data.signal,obj.winfo.L,obj.winfo.motherwave);
             end
         end
         
@@ -87,8 +90,8 @@ classdef WaveletTransformer < handle
                     obj.winfo.L = wmaxlev(size(data),obj.winfo.motherwave);
                     [obj.wave,obj.winfo.s] = obj.waveletDecom4Images(data,obj.winfo.L,obj.winfo.motherwave);
                 case 'packet'
-                    %obj.winfo.L = 10;
-                    obj.winfo.L = wmaxlev(size(data),obj.winfo.motherwave);
+                    obj.winfo.L = 10;
+                    %obj.winfo.L = wmaxlev(size(data),obj.winfo.motherwave);
                     obj.winfo.par=struct('N',obj.winfo.L,'pdep',0,'wvf',obj.winfo.motherwave,'dec','greedy');
                     obj.winfo.ent_par=struct('ent','shannon','opt',0);
                     [obj.wave,obj.winfo.packet_stream,obj.winfo.s,~]=obj.decomp_packets2D(data,obj.winfo.par,obj.winfo.ent_par);
@@ -97,19 +100,19 @@ classdef WaveletTransformer < handle
         end
         
         function signal = iwt1D(obj,data)
-            switch data.type.wt
+            switch obj.transmethod
                 case 'cwt'
-                    signal = obj.invcwt(data.wave, data.motherwave, data.wave_info.scale, data.wave_info.paramout, data.wave_info.k);
+                    signal = obj.invcwt(data, obj.winfo.motherwave, obj.winfo.scale, obj.winfo.paramout, obj.winfo.k);
                 case 'convolution'
-                    signal = obj.idwt_conv1D(data.wave(:,1),data.wave(:,2),data.motherwave);
+                    signal = obj.idwt_conv1D(data(:,1),data(:,2),obj.winfo.motherwave);
                 case 'lifting'
-                    signal = obj.idwt_lifting1D(data.wave(:,1),data.wave(:,2),data.motherwave);
+                    signal = obj.idwt_lifting1D(data(:,1),data(:,2),obj.winfo.motherwave);
                 case 'dyadic_decomp'
-                    signal = obj.idwt_dyadic_recon(data.wave,data.motherwave,data.wave_info.N);
+                    signal = obj.idwt_dyadic_recon(data,obj.winfo.motherwave,obj.winfo.N);
                 case 'multilevel'
-                    signal = waverec(data.wave,data.wave_info.l,data.motherwave); %Esta funcion es de matlab
+                    signal = waverec(data,obj.winfo.l,obj.winfo.motherwave); %Esta funcion es de matlab
                 case 'matlab'
-                    signal = waverec(data.wave,data.wave_info.l,data.motherwave);
+                    signal = waverec(data,obj.winfo.l,obj.winfo.motherwave);
             end
         end
         

@@ -5,7 +5,7 @@ in.transtype = 'Fourier';
 data1 = Data(in);
 
 figure();
-set(gcf,'position',[0,0,680,3*440])
+%set(gcf,'position',[0,0,680,3*440])
 t1 = tiledlayout(3,3,'TileSpacing','compact','Padding','tight');
 %nexttile;
 % imshow(mat2gray(data1.signal));
@@ -31,15 +31,11 @@ c.method = 'threshold';
 c_1 = Compressor(ft1,c);
 c_1.computeErr(data1);
 
-
 c_2 = Compressor(ft2,c);
 c_2.computeErr(data1);
 
-
 c_3 = Compressor(ft3,c);
 c_3.computeErr(data1);
-
-
 
 % Plot
 

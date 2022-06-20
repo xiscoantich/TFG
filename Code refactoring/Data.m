@@ -1,12 +1,12 @@
 classdef Data < handle
     properties (Access = public)
-        typesignal
-        filename
         signal
         audioinf
     end
     
     properties (Access = private)
+        typesignal
+        filename
         
     end
     methods (Access = public)
@@ -55,6 +55,7 @@ classdef Data < handle
             if IsColumn == 0 %False
                 obj.signal = obj.signal.';
             end
+         
         end
         
         function loadImage(obj)

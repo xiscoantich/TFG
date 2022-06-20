@@ -5,6 +5,8 @@ N = length(t);
 omega = 2;
 x = cos(omega*t);
 
+%x = chirp(t,0,20,3,'linear');
+
 %CWT options
 pad = 0;
 dj = 0.25; %smaller number gives better resolution, default = 0.25;
@@ -30,13 +32,13 @@ figure(1);
 subplot(  1, 2, 1)
 plot(t,x); %original signal 
 hold on; 
-plot(t, Xrec, 'r--') 
-legend('Original signal', 'Reconstructed Signal', 'location', 'best') 
+%plot(t, Xrec, 'r--') 
+%legend('Original signal', 'Reconstructed Signal', 'location', 'best') 
 xlabel('Time (s)'); 
 ylabel('Signal (arbitrary units)')
-title(sprintf('wo = %g, k0 = %d, dE = %3.3f', omega, param, dE))
+%title(sprintf('wo = %g, k0 = %d, dE = %3.3f', omega, param, dE))
 ylim([-1.5 1.5]);
-set(findall(gcf,'-property','FontSize'),'FontSize',16)
+set(findall(gcf,'-property','FontSize'),'FontSize',12)
 hold off;
 
 %plot wavelet coeffs 
@@ -45,8 +47,8 @@ subplot( 1, 2,2)
 imagesc(abs(wave)) 
 xlabel('Time (integer index)') 
 ylabel('Scale')
-title(sprintf('wo = %g, k0 = %d', omega, param))
-set(findall(gcf,'-property','FontSize'),'FontSize',16)
+%title(sprintf('wo = %g, k0 = %d', omega, param))
+set(findall(gcf,'-property','FontSize'),'FontSize',12)
 hold off
 
 
