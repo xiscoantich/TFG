@@ -61,59 +61,14 @@ colormap;
 title(['Lifting scheme: [',num2str(c.keep*100),'%] MSSIM =', num2str(c_3.err.mssim)],'FontSize',7);
 end
 
-%% Error
-
-N=70;
-y1 = linspace(0.5,0.01,N);
-
-for i=1:N
-c.keep = y1(i);
-c.method = 'threshold';
-
-%Matlab
-in.winfo.motherwave = 'Haar';%''db5';%'Haar';%'Haar';%'CDF_9x7';
-in.transmethod = 'matlab'; 
-ft1 = Transformer(data1, in);
-c_1 = Compressor(ft1,c);
-c_1.computeErr(data1);
-
-%dwt
-in.winfo.motherwave = 'Haar';%''db5';%'Haar';%'Haar';%'CDF_9x7';
-in.transmethod = 'dwt_matlab'; 
-ft2 = Transformer(data1, in);
-c_2 = Compressor(ft2,c);
-c_2.computeErr(data1);
-
-%packet
-in.winfo.motherwave = 'Haar';%''db5';%'Haar';%'Haar';%'CDF_9x7';
-in.transmethod = 'packet'; 
-ft3 = Transformer(data1, in);
-c_3 = Compressor(ft3,c);
-c_3.computeErr(data1);
-
-err.matlab(i) = c_1.err.mssim;
-err.dwt(i) = c_2.err.mssim;
-err.packet(i) = c_3.err.mssim;
-end
-
-figure
-plot (y1*100,err.matlab,'DisplayName','Matlab decom');
-hold on;
-plot (y1*100,err.dwt,'DisplayName','DWT');
-plot (y1*100,err.packet,'DisplayName','Lifting scheme');
-xlabel('Compression [%]')
-ylabel('MSSIM')
-legend
-hold off
-
 %% 2 Error plot  
 in.typesignal = 'image'; % image or audio
 in.filename = 'cat.jpg'; %name of the file
 in.transtype = 'Wavelet';
 in.winfo.motherwave = 'Haar';%''db5';%'Haar';%'Haar';%'CDF_9x7';
 data1 = Data(in);
-N=50;
-y1 = linspace(0.5,0.001,N);
+N=20;
+y1 = linspace(0.5,0.01,N);
 %Matlab
 in.winfo.motherwave = 'Haar';%''db5';%'Haar';%'Haar';%'CDF_9x7';
 in.transmethod = 'matlab'; 

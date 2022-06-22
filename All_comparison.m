@@ -54,7 +54,7 @@ in.typesignal = 'image'; % image or audio
 in.filename = 'cat.jpg'; %name of the file
 data1 = Data(in);
 
-N=50;
+N=20;
 y1 = linspace(0.5,0.05,N);
 in.transtype = 'Fourier';
 in.transmethod = 'dct_8by8'; 
@@ -152,7 +152,7 @@ legend
 hold off
 
 %% 
-%All comparison
+%Details comparison
 
 in.typesignal = 'image'; % image or audio
 in.filename = 'cat.jpg'; %name of the file

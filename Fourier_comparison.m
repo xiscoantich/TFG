@@ -60,59 +60,14 @@ colormap;
 
 title(['JPEG: [',num2str(c.keep*100),'%] MSSIM =', num2str(c_3.err.mssim)],'FontSize',7);
 end
-% %% Error
-% 
-% N=30;
-% y1 = linspace(0.5,0.05,N);
-% 
-% %Matlab
-% in.transmethod = 'matlab'; 
-% ft1 = Transformer(data1, in);
-% %dct
-% in.transmethod = 'dct'; 
-% ft2 = Transformer(data1, in);
-% %dct_8by8
-% in.transmethod = 'dct_8by8'; 
-% ft3 = Transformer(data1, in);
-% 
-% for i=1:N
-% c.keep = y1(i);
-% c.method = 'threshold';
-% 
-% 
-% c_1 = Compressor(ft1,c);
-% c_1.computeErr(data1);
-% 
-% 
-% c_2 = Compressor(ft2,c);
-% c_2.computeErr(data1);
-% 
-% 
-% c_3 = Compressor(ft3,c);
-% c_3.computeErr(data1);
-% 
-% err.fft(i) = c_1.err.mssim;
-% err.dct(i) = c_2.err.mssim;
-% err.jpeg(i) = c_3.err.mssim;
-% end
-% 
-% figure
-% plot (y1*100,err.fft,'DisplayName','FFT');
-% hold on;
-% plot (y1*100,err.dct,'DisplayName','DCT');
-% plot (y1*100,err.jpeg,'DisplayName','JPEG');
-% xlabel('Compression [%]')
-% ylabel('MSSIM')
-% legend
-% hold off
 
 %% 2 Error plot  
 in.typesignal = 'image'; % image or audio
 in.filename = 'cat.jpg'; %name of the file
 in.transtype = 'Fourier';
 data1 = Data(in);
-N=70;
-y1 = linspace(0.5,0.01,N);
+N=20;
+y1 = linspace(0.5,0.05,N);
 
 %Matlab
 in.transmethod = 'matlab'; 
