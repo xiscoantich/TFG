@@ -9,7 +9,7 @@ data1 = Data(in);
 % set(gcf,'position',[0,0,680,3*440])
 % t1 = tiledlayout(3,3,'TileSpacing','compact','Padding','tight');
 
-N=70;
+N=20;
 y1 = linspace(0.5,0.05,N);
 for i=1:N
 c.keep = y1(i);
